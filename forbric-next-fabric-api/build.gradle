@@ -1,0 +1,5 @@
+plugins { id 'java-library' }
+description = 'Minimal fabric-api event bridge + language adapter SPI'
+dependencies {
+    api project(':forbric-next-loader-api')
+}

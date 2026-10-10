@@ -1,0 +1,22 @@
+// Root Gradle config for Forbric-NEXT.
+pluginManagement {
+    repositories {
+        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'forbric-next'
+
+// Per-loader isolation: each ecosystem owns its own discovery, dependency graph, entrypoint ordering,
+// and lifecycle. The boot module only orchestrates *between* loaders — it never re-sorts a loader's
+// internal mod list.
+include ':forbric-next-common'
+include ':forbric-next-loader-api'
+include ':forbric-next-fabric-api'
+include ':forbric-next-fabric'
+include ':forbric-next-forge'
+include ':forbric-next-neoforge'
+include ':forbric-next-boot'
+include ':forbric-next-launcher'

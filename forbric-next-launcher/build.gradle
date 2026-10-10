@@ -1,0 +1,13 @@
+plugins { id 'application' }
+description = 'Forbric-NEXT launcher entry point'
+application {
+    mainClass = 'net.forbric.next.launcher.Main'
+}
+dependencies {
+    implementation project(':forbric-next-boot')
+    implementation project(':forbric-next-fabric')
+    implementation project(':forbric-next-fabric-api')
+    implementation project(':forbric-next-forge')
+    implementation project(':forbric-next-neoforge')
+    implementation project(':forbric-next-common')
+}

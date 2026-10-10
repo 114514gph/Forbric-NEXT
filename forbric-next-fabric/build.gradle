@@ -1,0 +1,7 @@
+plugins { id 'java-library' }
+description = 'Fabric ecosystem loader'
+dependencies {
+    api project(':forbric-next-loader-api')
+    api project(':forbric-next-fabric-api')
+    implementation project(':forbric-next-common')
+}

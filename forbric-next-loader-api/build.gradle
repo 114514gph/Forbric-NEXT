@@ -1,0 +1,5 @@
+plugins { id 'java-library' }
+description = 'Stable service-provider interface for ecosystem loaders'
+dependencies {
+    api project(':forbric-next-common')
+}

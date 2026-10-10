@@ -1,0 +1,22 @@
+Forbric-NEXT — a next-generation multi-ecosystem Minecraft mod loader
+Copyright 2026 The Forbric Project
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This project is a clean redesign of Forbric 0.3.0. It is not a fork of that codebase;
+it re-architects the same goals (running Fabric, MinecraftForge, and NeoForge mods in
+one instance) with per-loader isolation as the central principle.
+
+Modules:
+    forbric-next-loader-api/     stable SPI: ModLoader, LoadPhase, EventBus, BootOrchestrator
+    forbric-next-common/         shared utilities
+    forbric-next-fabric-api/     minimal fabric-api event bridge + language adapter SPI
+    forbric-next-fabric/         Fabric ecosystem loader
+    forbric-next-forge/          MinecraftForge ecosystem loader
+    forbric-next-neoforge/       NeoForge ecosystem loader
+    forbric-next-boot/           cross-ecosystem orchestrator
+    forbric-next-launcher/       entry point

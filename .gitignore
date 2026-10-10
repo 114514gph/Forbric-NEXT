@@ -1,0 +1,17 @@
+# Build output
+build/
+.gradle/
+*.class
+
+# Gradle wrapper jar IS committed
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
