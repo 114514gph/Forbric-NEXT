@@ -1,0 +1,6 @@
+plugins { id 'java-library' }
+description = 'Per-Minecraft-version adapter SPI + server bootstrap'
+dependencies {
+    api project(':forbric-next-loader-api')
+    implementation project(':forbric-next-common')
+}

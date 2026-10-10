@@ -1,65 +1,77 @@
 # Forbric-NEXT
 
-A next-generation multi-ecosystem Minecraft mod loader that runs **Fabric**, **MinecraftForge**,
-and **NeoForge** mods side by side — without reimplementing each loader's internal ordering.
+[简体中文](README.zh-CN.md) | **English**
 
-> **Status: early skeleton.** This is a clean redesign of Forbric 0.3.0, not a fork.
-> It compiles, runs the 9-phase lifecycle across all three loaders, and ships a minimal
-> fabric-api event bridge. Porting the discovery, metadata parsing, and mixin wiring is
-> the next milestone.
+Run Fabric, Forge, and NeoForge mods in one instance — without the loader fighting itself.
 
-## Why "NEXT"?
+## Why
 
-Forbric 0.3.0 proved the multi-loader concept but accumulated four structural problems
-that made the codebase fragile:
+I spent a while hacking on [Forbric 0.3.0](https://github.com/Ray-T-r/Minecraft-Forbric-mod-loader)
+trying to get it to co-load mods from three ecosystems. The idea was right, but the architecture
+gradually turned into something I couldn't work with:
 
-1. **"Strong compat" overreach** — the boot layer rebuilt a unified dependency graph and
-   sorted Forge mods with Fabric mods mixed in, ignoring Forge's native `ModSorter` semantics.
-2. **Per-mod canary patches** — 8 of 35 canary modules were hardcoded workarounds for
-   specific published mods (Carpet, Create, C2ME…).
-3. **Build-pipeline coupling** — the "sovereign kernel" still consumed jars produced by
-   the legacy forbric-loader shell scripts.
-4. **Silent stubs** — lifecycle callbacks were empty, `getFile()` returned null, and
-   `isDevelopmentEnvironment()` was hardcoded false.
+- The boot layer rebuilt one big dependency graph and sorted Forge mods together with Fabric mods,
+  ignoring how Forge's own `ModSorter` actually works.
+- Eight of the 35 "canary" modules were just hardcoded `if (modId.equals("carpet"))` patches
+  to make one specific mod launch.
+- The "sovereign kernel" still pulled build artifacts from the old loader's shell scripts.
+- Half the lifecycle callbacks were empty stubs that nobody noticed.
 
-Forbric-NEXT starts from a clean module graph where each ecosystem owns its discovery,
-dependency resolution, and lifecycle. The boot layer only decides *between* ecosystems.
+So I stopped patching and started over. Forbric-NEXT is a clean module graph where each ecosystem
+owns its own discovery, dependency resolution, and lifecycle. The boot layer only decides
+*between* ecosystems — it never re-sorts a mod list that belongs to another loader.
 
-## Architecture
-
-```
-forbric-next-loader-api     SPI: ModLoader / LoadPhase / EventBus / BootOrchestrator
-forbric-next-common         shared utilities
-forbric-next-fabric-api     minimal fabric-api event bridge + language adapter SPI
-forbric-next-fabric         Fabric ecosystem loader (native mod-id ordering)
-forbric-next-forge          MinecraftForge ecosystem loader (BEFORE/AFTER edges only)
-forbric-next-neoforge       NeoForge ecosystem loader
-forbric-next-boot           cross-ecosystem orchestrator
-forbric-next-launcher       entry point
-```
-
-### Core contract
-
-The boot orchestrator calls only three methods on each loader:
-`discover()` → `resolve()` → `runPhase(LoadPhase)`. It never re-sorts a loader's internal
-mod list, never mixes cross-ecosystem dependencies into one topological graph, and never
-injects per-mod special cases.
-
-- **Fabric mods** run in mod-id lexicographic order (matching Fabric Loader native).
-- **Forge/NeoForge mods** run in the order their own `ModSorter` produces (explicit
-  BEFORE/AFTER edges only; mandatory `depends` is a presence requirement, not a sequence).
-- **Cross-ecosystem deps** are presence checks, not ordering edges.
-
-## Build
+## Quick start
 
 Requires JDK 21+.
 
 ```bash
+git clone https://github.com/114514gph/Forbric-NEXT.git
+cd Forbric-NEXT
 ./gradlew build
 ./gradlew :forbric-next-launcher:run
 ```
 
-Maven repositories use Aliyun mirrors by default. Gradle wrapper uses Tencent Cloud mirror.
+That's it — no `bootstrap.sh`, no pre-built jars to download, no environment variables to set.
+Maven goes through Aliyun mirrors, Gradle through Tencent.
+
+## Project structure
+
+```
+Forbric-NEXT/
+├── forbric-next-loader-api/     # the SPI: ModLoader, LoadPhase, EventBus, BootOrchestrator
+├── forbric-next-common/         # shared utilities
+├── forbric-next-fabric-api/     # minimal fabric-api event bridge + language adapter SPI
+├── forbric-next-version/       # per-MC-version adapter (1.18 / 1.20 / 1.21 / 26.x skeletons)
+├── forbric-next-fabric/         # Fabric ecosystem loader
+├── forbric-next-forge/          # MinecraftForge ecosystem loader
+├── forbric-next-neoforge/       # NeoForge ecosystem loader
+├── forbric-next-boot/           # cross-ecosystem orchestrator
+└── forbric-next-launcher/       # entry point
+```
+
+The key contract: the boot orchestrator calls `discover() → resolve() → runPhase()` on each
+loader and nothing else. It doesn't know your mod IDs. It doesn't mix cross-ecosystem deps
+into one graph. It doesn't inject per-mod special cases.
+
+## Status
+
+Early skeleton. Everything compiles, the 9-phase lifecycle runs end-to-end, and the
+fabric-api event bridge fires correctly. What's not there yet:
+
+- Real mod discovery (port from 0.3.0)
+- Mixin wiring
+- Actually launching Minecraft
+- The 1.18 / 1.20 / 1.21 version adapters are interface stubs; only 26.x has a functional adapter
+
+If you want to help, the next milestone is porting `FabricModDiscovery` and `FabricLoadOrder`
+from 0.3.0 into `forbric-next-fabric`.
+
+## Credits
+
+Based on lessons learned from [Forbric 0.3.0 by Ray-T-r](https://github.com/Ray-T-r/Minecraft-Forbric-mod-loader).
+Same goal, different architecture. This repo is a fork of that codebase but has been rewritten
+from the module graph up — the old loader's classes are not carried over.
 
 ## License
 

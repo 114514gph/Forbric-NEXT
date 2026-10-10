@@ -1,60 +1,74 @@
 # Forbric-NEXT
 
-下一代多生态系 Minecraft mod 加载器，在同一实例里同时运行 **Fabric**、**MinecraftForge**
-和 **NeoForge** mod——而不重写各加载器内部的排序逻辑。
+**简体中文** | [English](README.md)
 
-> **状态：早期骨架。** 这是 Forbric 0.3.0 的干净重设计，不是 fork。
-> 项目可编译，能跨三个加载器跑通 9 阶段生命周期，并附带最小 fabric-api 事件桥。
-> 移植发现、元数据解析和 mixin 接线是下一步里程碑。
+在同一个实例里跑 Fabric、Forge、NeoForge 的 mod——而不是让加载器自己跟自己打架。
 
-## 为什么叫 "NEXT"？
+## 为什么有这个项目
 
-Forbric 0.3.0 证明了多加载器概念可行，但积累了四个结构性问题：
+我折腾了一阵 [Forbric 0.3.0](https://github.com/Ray-T-r/Minecraft-Forbric-mod-loader)，
+想让它能同时加载三个生态系的 mod。方向是对的，但架构慢慢变成了我自己都维护不动的样子：
 
-1. **"强兼"越界**——boot 层自建统一依赖图，把 Fabric mod 和 Forge mod 混排，
-   无视 Forge 原生 `ModSorter` 语义。
-2. **per-mod canary 补丁**——35 个 canary 里有 8 个是为特定已发布 mod 打的硬编码补丁
-   （Carpet、Create、C2ME……）。
-3. **构建流水线耦合**——"主权内核"仍在消费旧 forbric-loader 脚本产出的 jar。
-4. **静默桩**——生命周期回调空实现，`getFile()` 返回 null，`isDevelopmentEnvironment()`
-   硬编码 false。
+- boot 层自建了一张大依赖图，把 Forge mod 和 Fabric mod 混在一起排序，
+  完全不管 Forge 原生 `ModSorter` 是怎么工作的。
+- 35 个 canary 模块里有 8 个就是硬编码的 `if (modId.equals("carpet"))`，
+  为了让某个特定 mod 能跑起来。
+- 号称"主权内核"，结果构建产物还得靠旧 loader 的 shell 脚本吐出来。
+- 一半生命周期回调是空桩，没人发现。
 
-Forbric-NEXT 从干净的模块图出发，每个生态系拥有自己的发现、依赖解析和生命周期。
-boot 层只做"跨系编排"。
+所以我不修了，重写。Forbric-NEXT 是一个干净的模块图，每个生态系自己管自己的发现、
+依赖解析和生命周期。boot 层只做"跨系编排"——绝不替别的加载器重排 mod 列表。
 
-## 模块结构
-
-```
-forbric-next-loader-api     SPI：ModLoader / LoadPhase / EventBus / BootOrchestrator
-forbric-next-common         共享工具
-forbric-next-fabric-api     最小 fabric-api 事件桥 + 语言适配器 SPI
-forbric-next-fabric         Fabric 生态加载器（原生 mod-id 序）
-forbric-next-forge          MinecraftForge 生态加载器（仅 BEFORE/AFTER 边）
-forbric-next-neoforge       NeoForge 生态加载器
-forbric-next-boot           跨系编排器
-forbric-next-launcher       入口
-```
-
-### 核心契约
-
-boot 编排器对每个加载器只调三个方法：`discover()` → `resolve()` → `runPhase(LoadPhase)`。
-它永不重排某系内部 mod 列表，永不把跨系依赖塞进一张拓扑图，永不注入 per-mod 特判。
-
-- **Fabric mod** 按 mod-id 字典序跑（对齐 Fabric Loader 原生）。
-- **Forge/NeoForge mod** 按各自 `ModSorter` 产出的顺序跑（仅显式 BEFORE/AFTER 边；
-  mandatory `depends` 是存在性要求，不是排序边）。
-- **跨系依赖** 只做存在性检查，不进任何一组的内部拓扑图。
-
-## 构建
+## 快速开始
 
 需要 JDK 21+。
 
 ```bash
+git clone https://github.com/114514gph/Forbric-NEXT.git
+cd Forbric-NEXT
 ./gradlew build
 ./gradlew :forbric-next-launcher:run
 ```
 
-Maven 默认走阿里云镜像，Gradle wrapper 走腾讯云镜像。
+就这样——不需要 `bootstrap.sh`，不需要预先下载 jar，不需要设环境变量。
+Maven 走阿里云，Gradle 走腾讯云。
+
+## 项目结构
+
+```
+Forbric-NEXT/
+├── forbric-next-loader-api/     # SPI：ModLoader / LoadPhase / EventBus / BootOrchestrator
+├── forbric-next-common/         # 共享工具
+├── forbric-next-fabric-api/     # 最小 fabric-api 事件桥 + 语言适配器 SPI
+├── forbric-next-version/       # 版本适配层（1.18 / 1.20 / 1.21 / 26.x 骨架）
+├── forbric-next-fabric/        # Fabric 生态加载器
+├── forbric-next-forge/         # MinecraftForge 生态加载器
+├── forbric-next-neoforge/      # NeoForge 生态加载器
+├── forbric-next-boot/           # 跨系编排器
+└── forbric-next-launcher/      # 入口
+```
+
+核心契约：boot 编排器对每个加载器只调 `discover() → resolve() → runPhase()`，
+除此之外什么都不做。它不知道你的 mod id，不把跨系依赖塞进一张图，不写 per-mod 特判。
+
+## 当前状态
+
+早期骨架。编译能过，9 阶段生命周期能跑通，fabric-api 事件桥能正确触发。
+还没有的东西：
+
+- 真正的 mod 发现（从 0.3.0 移植）
+- Mixin 接线
+- 真正启动 Minecraft
+- 1.18 / 1.20 / 1.21 的版本适配器只是接口骨架，只有 26.x 有功能性实现
+
+想帮忙的话，下一步是把 0.3.0 的 `FabricModDiscovery` 和 `FabricLoadOrder`
+移植到 `forbric-next-fabric`。
+
+## 致谢
+
+基于 [Ray-T-r 的 Forbric 0.3.0](https://github.com/Ray-T-r/Minecraft-Forbric-mod-loader)
+的教训重新设计。目标一样，架构不同。这个仓库 fork 自那个代码库，但从模块图开始重写了——
+旧 loader 的类没有搬过来。
 
 ## 许可证
 
