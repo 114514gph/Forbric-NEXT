@@ -2,6 +2,11 @@
 
 [简体中文](README.zh-CN.md) | **English**
 
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Java](https://img.shields.io/badge/java-17%2B-orange)
+![MC](https://img.shields.io/badge/mc-1.18%20%7C%201.20%20%7C%201.21%20%7C%2026.x-green)
+![Status](https://img.shields.io/badge/status-alpha-yellow)
+
 Run Fabric, Forge, and NeoForge mods in one instance — without the loader fighting itself.
 
 ## Why

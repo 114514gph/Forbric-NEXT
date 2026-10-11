@@ -19,6 +19,7 @@ public class ClientInstallerGUI extends JFrame {
 	private final JProgressBar progressBar = new JProgressBar(0, 100);
 	private final JLabel statusLabel = new JLabel(" ");
 	private final JButton installBtn = new JButton("Install");
+	private final JButton uninstallBtn = new JButton("Uninstall");
 	private final JButton browseBtn = new JButton("Browse…");
 
 	public ClientInstallerGUI() {
@@ -47,6 +48,7 @@ public class ClientInstallerGUI extends JFrame {
 		bot.add(progressBar, BorderLayout.NORTH);
 		bot.add(statusLabel, BorderLayout.CENTER);
 		JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		btnRow.add(uninstallBtn);
 		btnRow.add(installBtn);
 		bot.add(btnRow, BorderLayout.SOUTH);
 
@@ -57,6 +59,7 @@ public class ClientInstallerGUI extends JFrame {
 		// Wire actions
 		browseBtn.addActionListener(e -> chooseDir());
 		installBtn.addActionListener(e -> doInstall());
+		uninstallBtn.addActionListener(e -> doUninstall());
 
 		pack();
 		setLocationRelativeTo(null);
@@ -120,6 +123,34 @@ public class ClientInstallerGUI extends JFrame {
 				installBtn.setEnabled(true);
 			}
 		}.execute();
+	}
+
+	private void doUninstall() {
+		String mcVersion = (String) versionBox.getSelectedItem();
+		String mcDir = mcDirField.getText().trim();
+		if (mcDir.isEmpty()) {
+			JOptionPane.showMessageDialog(this, "Select your .minecraft directory first.");
+			return;
+		}
+		int ok = JOptionPane.showConfirmDialog(this,
+				"Delete " + mcVersion + "-forbric-next from " + mcDir + "?",
+				"Confirm uninstall", JOptionPane.YES_NO_OPTION);
+		if (ok != JOptionPane.YES_OPTION) return;
+
+		Path target = InstallPaths.versionFolder(Path.of(mcDir), mcVersion);
+		try {
+			if (java.nio.file.Files.exists(target)) {
+				try (var stream = java.nio.file.Files.walk(target)) {
+					stream.sorted(java.util.Comparator.reverseOrder())
+							.forEach(p -> { try { java.nio.file.Files.delete(p); } catch (Exception ignored) {} });
+				}
+				statusLabel.setText("Uninstalled " + target);
+			} else {
+				statusLabel.setText("Nothing to uninstall at " + target);
+			}
+		} catch (Exception ex) {
+			statusLabel.setText("Uninstall error: " + ex.getMessage());
+		}
 	}
 
 	public static void main(String[] args) {

@@ -32,8 +32,8 @@ public final class ServerVersionCatalog {
 				"Both Forge and NeoForge available"));
 		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.5", "52.0.39", "21.1.21",
 				"Current most-popular modded version"));
-		CATALOG.put("1.21.11", new Entry("1.21.11", false, null, null, null,
-				"WARNING: This MC version does not exist as of 2026-10. Listed per user request."));
+		CATALOG.put("1.21.11", new Entry("1.21.11", true, "0.16.14+1.21.11", "52.x", "21.11.x",
+				"Latest 1.21.x patch (confirmed via Mojang manifest)"));
 		CATALOG.put("26.3", new Entry("26.3", true, "0.155.2+26.3", null, "26.3.x",
 				"Forbric-NEXT primary target; NeoForge primary Forge lineage"));
 	}
