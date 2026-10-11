@@ -10,6 +10,17 @@ package net.forbric.next.version;
  * <p>This replaces Forbric 0.3.0's hardcoded "MC 26.2 only" assumptions: class names
  * like {@code net.minecraft.world.level.block.Block} or event constants like
  * {@code net.minecraft.server.MinecraftServer} differ between 1.18, 1.20, 1.21, and 26.x.
+ *
+ * <p><b>How to fill in a new adapter:</b> do not guess class names.
+ * <ul>
+ *   <li>Use <a href="https://linkie.shedaniel.dev">Linkie</a> (the Fabric team's mappings lookup)
+ *       to find class/method/field names across versions and mapping schemes.</li>
+ *   <li>Since 1.19.4, Mojang publishes <b>official mappings</b> (Mojmap) — the game jar is no
+ *       longer fully obfuscated. Decompile with Vineflower/Florio (or use Mojang's published
+ *       mappings CSV directly) to see exact names for that version.</li>
+ *   <li>For pre-1.19.4 versions, you need MCP/Searge mappings and intermediary (Fabric's
+ *       deobfuscation layer). Cross-check all three before hardcoding.</li>
+ * </ul>
  */
 public interface VersionAdapter {
 

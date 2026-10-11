@@ -1,0 +1,16 @@
+plugins { id 'java' }
+description = 'Forbric-NEXT client installer (GUI)'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    // Installer is standalone — no kernel deps, so it runs on JRE 17+
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
