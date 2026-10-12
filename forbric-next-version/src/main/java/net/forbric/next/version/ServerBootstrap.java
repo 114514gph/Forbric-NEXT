@@ -1,6 +1,7 @@
 package net.forbric.next.version;
 
 import net.forbric.next.api.LoadContext;
+import net.forbric.next.api.bukkit.MixedServerMode;
 import net.forbric.next.common.NextLog;
 
 /**
@@ -33,6 +34,19 @@ public final class ServerBootstrap {
 
 		if (context.environment() != LoadContext.Environment.SERVER) {
 			NextLog.warn("ServerBootstrap called with non-SERVER environment: {}", context.environment());
+		}
+
+		// 读取启动脚本注入的 -Dforbric.serverMode（pure / mixed）。
+		// 这是纯服务端的分支：客户端启动路径（ClientBootstrap/Main）不走这里，因此不会被影响。
+		MixedServerMode serverMode = MixedServerMode.fromSystemProperty();
+		NextLog.info("ServerBootstrap: server mode = {}", serverMode);
+		if (serverMode.isMixed()) {
+			// 混合端：在 mod 体系就绪后，由可选的 PluginLoaderBridge 实现去加载 ./plugins 下的
+			// Bukkit 插件。这里只做提示，真正的桥接实现由可选模块以 SPI 提供。
+			NextLog.info("ServerBootstrap: mixed mode — Bukkit plugin bridge (PluginLoaderBridge) will be "
+					+ "installed after mod construction; plugins dir = ./plugins");
+		} else {
+			NextLog.info("ServerBootstrap: pure mode — no Bukkit plugin bridge attached");
 		}
 
 		// In server mode:

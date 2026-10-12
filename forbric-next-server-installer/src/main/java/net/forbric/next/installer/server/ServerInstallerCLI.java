@@ -21,18 +21,28 @@ public class ServerInstallerCLI {
 		String mcVersion = null;
 		Path targetDir = null;
 		boolean acceptEula = false;
+		// 服务端模式：默认 pure（纯 Forbric）；mixed = Forbric + Bukkit 插件混合端。
+		String serverMode = "pure";
 
 		for (int i = 0; i < args.length; i++) {
 			switch (args[i]) {
 				case "--mc" -> mcVersion = args[++i];
 				case "--dir" -> targetDir = Path.of(args[++i]);
 				case "--accept-eula" -> acceptEula = true;
+				case "--server-mode" -> serverMode = args[++i];
 				case "--help", "-h" -> {
 					printUsage();
 					return;
 				}
 				default -> System.err.println("Unknown argument: " + args[i]);
 			}
+		}
+
+		// 规范化并校验服务端模式取值。
+		serverMode = serverMode.trim().toLowerCase();
+		if (!serverMode.equals("pure") && !serverMode.equals("mixed")) {
+			System.err.println("Unknown --server-mode: " + serverMode + " (expected pure or mixed)");
+			System.exit(1);
 		}
 
 		if (mcVersion == null || targetDir == null) {
@@ -58,6 +68,7 @@ public class ServerInstallerCLI {
 		System.out.println("  NeoForge:    " + (entry.neoForgeVersion() != null ? entry.neoForgeVersion() : "N/A"));
 		System.out.println("  Forge:       " + (entry.forgeVersion() != null ? entry.forgeVersion() : "N/A"));
 		System.out.println("  Fabric API:  " + (entry.fabricVersion() != null ? entry.fabricVersion() : "N/A"));
+		System.out.println("  Server mode: " + ("mixed".equals(serverMode) ? "mixed (Forbric + Bukkit)" : "pure (Forbric only)"));
 
 		try {
 			Files.createDirectories(targetDir);
@@ -71,7 +82,7 @@ public class ServerInstallerCLI {
 			}
 
 			// Launch scripts
-			writeStartScript(targetDir, mcVersion);
+			writeStartScript(targetDir, mcVersion, serverMode);
 			writeStopScript(targetDir);
 			writeConfig(targetDir, mcVersion);
 
@@ -82,10 +93,15 @@ public class ServerInstallerCLI {
 		}
 	}
 
-	private static void writeStartScript(Path dir, String mcVersion) throws IOException {
+	private static void writeStartScript(Path dir, String mcVersion, String serverMode) throws IOException {
 		// Default to "continue" so a single mod failure doesn't crash the whole server;
 		// set to "fail" in the config if you want strict mode.
-		String javaCmd = "java -Xmx4G -Xms1G -Dforbric.compatibilityPolicy=continue -jar forbric-next-server-" + mcVersion + ".jar nogui";
+		// serverMode 由 bootstrap 读取：mixed 会挂载 Bukkit 插件桥（Mohist/Arclight 架构），
+		// pure 为纯 Forbric 服务端。两种模式都显式写入该属性，bootstrap 不必再猜默认值。
+		String javaCmd = "java -Xmx4G -Xms1G"
+				+ " -Dforbric.compatibilityPolicy=continue"
+				+ " -Dforbric.serverMode=" + serverMode
+				+ " -jar forbric-next-server-" + mcVersion + ".jar nogui";
 
 		Files.writeString(dir.resolve("start.sh"),
 				"#!/usr/bin/env bash\n" +
@@ -135,13 +151,14 @@ public class ServerInstallerCLI {
 	}
 
 	private static void printUsage() {
-		System.out.println("Usage: java -jar forbric-next-server-installer.jar --mc <version> --dir <path> [--accept-eula]");
+		System.out.println("Usage: java -jar forbric-next-server-installer.jar --mc <version> --dir <path> [--accept-eula] [--server-mode pure|mixed]");
 		System.out.println();
 		System.out.println("Options:");
-		System.out.println("  --mc <version>    MC version to install (e.g. 1.21.1)");
-		System.out.println("  --dir <path>      Target server directory");
-		System.out.println("  --accept-eula     Auto-write eula=true");
-		System.out.println("  --help            Show this message");
+		System.out.println("  --mc <version>       MC version to install (e.g. 1.21.1)");
+		System.out.println("  --dir <path>         Target server directory");
+		System.out.println("  --accept-eula        Auto-write eula=true");
+		System.out.println("  --server-mode <m>   pure (default) = Forbric only; mixed = Forbric + Bukkit plugins");
+		System.out.println("  --help               Show this message");
 		System.out.println();
 		System.out.println("Supported MC versions: " + ServerVersionCatalog.all().keySet());
 	}
