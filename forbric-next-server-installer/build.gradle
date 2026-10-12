@@ -14,3 +14,9 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 17
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'net.forbric.next.installer.server.ServerInstallerCLI'
+    }
+}

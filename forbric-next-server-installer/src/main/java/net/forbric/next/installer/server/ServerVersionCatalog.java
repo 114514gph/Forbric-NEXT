@@ -24,16 +24,16 @@ public final class ServerVersionCatalog {
 	private static final Map<String, Entry> CATALOG = new LinkedHashMap<>();
 
 	static {
-		CATALOG.put("1.18.2", new Entry("1.18.2", true, "0.14.24", "40.2.17", null,
+		CATALOG.put("1.18.2", new Entry("1.18.2", true, "0.14.24", "40.3.12", null,
 				"Forge only; NeoForge starts at 1.20.1"));
-		CATALOG.put("1.19.2", new Entry("1.19.2", true, "0.14.25", "43.4.0", null,
+		CATALOG.put("1.19.2", new Entry("1.19.2", true, "0.14.25", "43.5.2", null,
 				"Forge only; most modded 1.19 target"));
-		CATALOG.put("1.20.4", new Entry("1.20.4", true, "0.15.10", "49.4.0", "20.4.0-beta",
+		CATALOG.put("1.20.4", new Entry("1.20.4", true, "0.15.10", "49.2.9", "20.4.0-beta",
 				"Both Forge and NeoForge available"));
-		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.14+1.21.1", "52.0.65", "21.1.45",
+		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.14+1.21.1", "52.1.16", "21.1.45",
 				"Most-popular modded version; NeoForge 21.1.45"));
-		CATALOG.put("1.21.11", new Entry("1.21.11", true, "0.16.14+1.21.11", "61.2.0", "21.11.40-beta",
-				"Latest 1.21.x patch; Forge 61.2, NeoForge 21.11.40-beta"));
+		CATALOG.put("1.21.11", new Entry("1.21.11", true, "0.16.14+1.21.11", "61.2.1", "21.11.40-beta",
+				"Latest 1.21.x patch; Forge 61.2.1, NeoForge 21.11.40-beta"));
 		CATALOG.put("26.3", new Entry("26.3", true, "0.155.2+26.3", null, "26.3.0.76",
 				"Primary target; NeoForge 26.3.0.76"));
 	}
