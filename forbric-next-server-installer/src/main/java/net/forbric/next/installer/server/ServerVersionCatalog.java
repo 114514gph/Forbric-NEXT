@@ -30,12 +30,12 @@ public final class ServerVersionCatalog {
 				"Forge only; most modded 1.19 target"));
 		CATALOG.put("1.20.4", new Entry("1.20.4", true, "0.15.10", "49.4.0", "20.4.0-beta",
 				"Both Forge and NeoForge available"));
-		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.5", "52.0.39", "21.1.21",
-				"Current most-popular modded version"));
-		CATALOG.put("1.21.11", new Entry("1.21.11", true, "0.16.14+1.21.11", "52.x", "21.11.x",
-				"Latest 1.21.x patch (confirmed via Mojang manifest)"));
-		CATALOG.put("26.3", new Entry("26.3", true, "0.155.2+26.3", null, "26.3.x",
-				"Forbric-NEXT primary target; NeoForge primary Forge lineage"));
+		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.14+1.21.1", "52.0.65", "21.1.45",
+				"Most-popular modded version; NeoForge 21.1.45"));
+		CATALOG.put("1.21.11", new Entry("1.21.11", true, "0.16.14+1.21.11", "61.2.0", "21.11.40-beta",
+				"Latest 1.21.x patch; Forge 61.2, NeoForge 21.11.40-beta"));
+		CATALOG.put("26.3", new Entry("26.3", true, "0.155.2+26.3", null, "26.3.0.76",
+				"Primary target; NeoForge 26.3.0.76"));
 	}
 
 	public static Map<String, Entry> all() { return Map.copyOf(CATALOG); }

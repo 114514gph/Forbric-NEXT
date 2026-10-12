@@ -45,16 +45,16 @@ public final class InstallerVersionCatalog {
 				"Both Forge and NeoForge available"));
 		CATALOG.put("1.21.1", new CatalogEntry(
 				"1.21.1", true,
-				"0.16.5", "52.0.39", "21.1.21",
-				"Current most-popular modded version"));
+				"0.16.14+1.21.1", "52.0.65", "21.1.45",
+				"Current most-popular modded version; NeoForge 21.1.45"));
 		CATALOG.put("1.21.11", new CatalogEntry(
-				"1.21.11", false,
-				"0.16.14+1.21.11", "52.x", "21.11.x",
-				"Latest 1.21.x patch (confirmed via Mojang version_manifest_v2)"));
+				"1.21.11", true,
+				"0.16.14+1.21.11", "61.2.0", "21.11.40-beta",
+				"Latest 1.21.x patch; Forge 61.2, NeoForge 21.11.40-beta"));
 		CATALOG.put("26.3", new CatalogEntry(
 				"26.3", true,
-				"0.155.2+26.3", null, "26.3.x",
-				"Forbric-NEXT primary target; NeoForge primary Forge lineage"));
+				"0.155.2+26.3", null, "26.3.0.76",
+				"Forbric-NEXT primary target; NeoForge 26.3.0.76"));
 	}
 
 	public static Map<String, CatalogEntry> all() {
