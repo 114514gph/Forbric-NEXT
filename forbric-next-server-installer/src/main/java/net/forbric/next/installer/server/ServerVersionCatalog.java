@@ -28,7 +28,7 @@ public final class ServerVersionCatalog {
 				"Forge only; NeoForge starts at 1.20.1"));
 		CATALOG.put("1.19.2", new Entry("1.19.2", true, "0.14.25", "43.5.2", null,
 				"Forge only; most modded 1.19 target"));
-		CATALOG.put("1.20.4", new Entry("1.20.4", true, "0.15.10", "49.2.9", "20.4.0-beta",
+		CATALOG.put("1.20.4", new Entry("1.20.4", true, "0.15.10", "49.2.13", "20.4.0-beta",
 				"Both Forge and NeoForge available"));
 		CATALOG.put("1.21.1", new Entry("1.21.1", true, "0.16.14+1.21.1", "52.1.16", "21.1.45",
 				"Most-popular modded version; NeoForge 21.1.45"));

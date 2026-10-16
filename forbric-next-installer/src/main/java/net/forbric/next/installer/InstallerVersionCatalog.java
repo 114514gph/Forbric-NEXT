@@ -41,7 +41,7 @@ public final class InstallerVersionCatalog {
 				"Forge only; most modded 1.19 target"));
 		CATALOG.put("1.20.4", new CatalogEntry(
 				"1.20.4", true,
-				"0.15.10", "49.2.9", "20.4.0-beta",
+				"0.15.10", "49.2.13", "20.4.0-beta",
 				"Both Forge and NeoForge available"));
 		CATALOG.put("1.21.1", new CatalogEntry(
 				"1.21.1", true,
