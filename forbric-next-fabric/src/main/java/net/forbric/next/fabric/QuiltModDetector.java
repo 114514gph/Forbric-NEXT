@@ -49,14 +49,18 @@ public final class QuiltModDetector {
 	/**
 	 * Quilt/Fabric mod 的中性元数据。
 	 *
-	 * @param id         mod id
-	 * @param version    版本字符串
+	 * @param id          mod id
+	 * @param version     版本字符串
+	 * @param name         人类可读名称（fabric.mod.json 的 "name"，可能为 null）
 	 * @param entrypoints entrypoint 组 → 入口类列表（组名如 main / client / server）
-	 * @param ecosystem  识别出的生态系（QUILT 或 FABRIC）
+	 * @param depends      mod id → 版本约束字符串（仅记录，骨架阶段不做版本范围校验）
+	 * @param ecosystem   识别出的生态系（QUILT 或 FABRIC）
 	 */
 	public record QuiltModMetadata(String id,
 								   String version,
+								   String name,
 								   Map<String, List<String>> entrypoints,
+								   Map<String, String> depends,
 								   Ecosystem ecosystem) {
 	}
 
@@ -111,12 +115,19 @@ public final class QuiltModDetector {
 			// version：优先 quilt_loader.version，回退 fabric 顶层 version。
 			String version = firstString(ql != null ? ql.get("version") : null,
 					fabricRoot != null ? fabricRoot.get("version") : null);
+			// name：优先 quilt_loader.name，回退 fabric 顶层 name。
+			String name = firstString(ql != null ? ql.get("name") : null,
+					fabricRoot != null ? fabricRoot.get("name") : null);
 			// entrypoints：优先 quilt_loader.entrypoints，回退 fabric 顶层 entrypoints。
 			Map<String, List<String>> entrypoints = normalizeEntrypoints(
 					ql != null ? ql.get("entrypoints") : null,
 					fabricRoot != null ? fabricRoot.get("entrypoints") : null);
+			// depends：优先 quilt_loader.depends，回退 fabric 顶层 depends。
+			Map<String, String> depends = normalizeDepends(
+					ql != null ? ql.get("depends") : null,
+					fabricRoot != null ? fabricRoot.get("depends") : null);
 
-			return new QuiltModMetadata(id, version, entrypoints, ecosystem);
+			return new QuiltModMetadata(id, version, name, entrypoints, depends, ecosystem);
 		}
 	}
 
@@ -192,5 +203,30 @@ public final class QuiltModDetector {
 			}
 		}
 		return out;
+	}
+
+	/**
+	 * 规范化 depends：取第一个非 null 来源（quilt_loader.depends 优先）。
+	 * 输入是 mod id → 版本约束字符串（fabric.mod.json 的 depends 是对象）。
+	 * Quilt 也可能用字符串数组形式（["modid", ...]），那里把数组项当作"任意版本"。
+	 */
+	@SuppressWarnings("unchecked")
+	private static Map<String, String> normalizeDepends(Object quiltDepends, Object fabricDepends) {
+		Map<String, String> result = new LinkedHashMap<>();
+		Object chosen = quiltDepends != null ? quiltDepends : fabricDepends;
+		if (chosen == null) return result;
+
+		if (chosen instanceof Map<?, ?> map) {
+			for (Map.Entry<?, ?> e : map.entrySet()) {
+				if (e.getKey() instanceof String k) {
+					result.put(k, String.valueOf(e.getValue()));
+				}
+			}
+		} else if (chosen instanceof List<?> list) {
+			for (Object o : list) {
+				if (o instanceof String s) result.put(s, "*");
+			}
+		}
+		return result;
 	}
 }
