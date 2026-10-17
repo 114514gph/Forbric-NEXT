@@ -1,5 +1,9 @@
 package net.forbric.next.neoforge;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +12,7 @@ import net.forbric.next.api.LoadContext;
 import net.forbric.next.api.LoadPhase;
 import net.forbric.next.api.ModCandidate;
 import net.forbric.next.api.ModLoader;
+import net.forbric.next.common.ModsToml;
 import net.forbric.next.common.NextLog;
 
 /**
@@ -29,7 +34,23 @@ public class NeoForgeModLoader implements ModLoader {
 	@Override
 	public List<ModCandidate> discover(LoadContext context) {
 		NextLog.info("NeoForgeModLoader: scanning {} for META-INF/neoforge.mods.toml", context.modsDir());
-		return List.of();
+		List<ModCandidate> out = new ArrayList<>();
+		Path modsDir = context.modsDir();
+		if (modsDir == null || !Files.isDirectory(modsDir)) return out;
+		try (DirectoryStream<Path> jars = Files.newDirectoryStream(modsDir, "*.jar")) {
+			for (Path jar : jars) {
+				var mods = ModsToml.readFromJar(jar, "META-INF/neoforge.mods.toml");
+				if (mods.isEmpty()) continue; // 不是 NeoForge mod
+				for (ModsToml.Mod m : mods.get()) {
+					out.add(new ModCandidate(m.modId(), m.version(),
+							Ecosystem.NEOFORGE, jar, List.of()));
+					NextLog.info("  发现 NeoForge mod: {} {} ({})", m.modId(), m.version(), jar.getFileName());
+				}
+			}
+		} catch (IOException e) {
+			NextLog.error("NeoForgeModLoader: 扫描 mods 目录失败: {}", e.toString());
+		}
+		return out;
 	}
 
 	@Override

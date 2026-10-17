@@ -93,13 +93,17 @@ This is **alpha**. It compiles, the lifecycle runs end-to-end, and the event bri
 
 | What works | What's still a skeleton |
 |------------|------------------------|
-| 9-phase lifecycle across all loaders | Real mod discovery (port from 0.3.0) |
-| Fabric / Forge / NeoForge / Quilt mod detection | Mixin wiring |
-| Minimal fabric-api event bridge (Server/Client lifecycle events) | Actual Minecraft launch |
+| 9-phase lifecycle across all loaders | Mixin wiring |
+| Fabric / Quilt mod discovery (parses fabric.mod.json / quilt.mod.json) | Actual Minecraft launch |
+| Forge / NeoForge mod detection (scans META-INF/mods.toml / neoforge.mods.toml) | Forge / NeoForge mod loading & runtime (mod classloader / mod-bus not wired) |
+| Fabric entrypoint execution (preLaunch→main→client→server, per-mod error isolation) | Fabric mod runtime inside a real MC JVM |
+| Load report (.forbric-next/load-report.txt) | |
+| Minimal fabric-api event bridge (Server/Client lifecycle + block/item registration) | |
 | Version adapter SPI (1.18 / 1.20 / 1.21 / 26.x interfaces) | Functional version adapters (only 26.x marked as such) |
 | Bukkit mixed-server SPI (interface defined) | Bukkit plugin loader implementation |
-| Client GUI installer + server CLI installer | Real game file download (skeleton creates folder structure only) |
+| Client GUI installer + server CLI installer (writes start.sh/start.bat) | Real game file download (user must supply vanilla server.jar) |
 | Hard dependency validation (fail boot on missing mandatory deps) | |
+| 24 automated tests (discovery / order / entrypoint / orchestrator / event bridge / version catalog) | |
 
 **Supported MC versions** (installer catalog):
 

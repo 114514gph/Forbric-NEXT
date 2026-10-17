@@ -13,7 +13,8 @@ import java.util.Map;
  *   <li>Which loader ecosystem versions are recommended</li>
  * </ul>
  *
- * <p>Note: 1.21.11 does not exist as of writing — it is listed per user request and flagged.
+ * <p>Note: 1.21.11 是 1.21.x 的后续补丁版本，已按用户要求标记 exists=true
+ * （早期版本曾误标 exists=false，现已纠正并由 InstallerVersionCatalogTest 锁定）。
  */
 public final class InstallerVersionCatalog {
 

@@ -34,8 +34,21 @@ public final class Event<T> {
 
 	/** Create a simple runnable event (zero-arg hooks). */
 	public static Event<Runnable> ofRunnable() {
+		// 根因修复：每个 listener 单独 try/catch 隔离。
+		// 之前是 `for (Runnable r : listeners) r.run();`——一个回调抛异常会直接中断整个分发，
+		// 排在它后面的所有 mod 回调都收不到事件。现在改成记录错误后继续下一个，
+		// 一个坏 mod 不再炸掉整条事件总线。
 		return new Event<>(listeners -> () -> {
-			for (Runnable r : listeners) r.run();
+			int index = 0;
+			for (Runnable r : listeners) {
+				try {
+					r.run();
+				} catch (Throwable t) {
+					net.forbric.next.common.NextLog.error(
+							"Event: 第 {} 个监听器执行失败，已隔离并继续分发: {}", index, t.toString());
+				}
+				index++;
+			}
 		});
 	}
 

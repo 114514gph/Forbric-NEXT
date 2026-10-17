@@ -94,28 +94,64 @@ public class ServerInstallerCLI {
 	}
 
 	private static void writeStartScript(Path dir, String mcVersion, String serverMode) throws IOException {
-		// Default to "continue" so a single mod failure doesn't crash the whole server;
-		// set to "fail" in the config if you want strict mode.
-		// serverMode 由 bootstrap 读取：mixed 会挂载 Bukkit 插件桥（Mohist/Arclight 架构），
-		// pure 为纯 Forbric 服务端。两种模式都显式写入该属性，bootstrap 不必再猜默认值。
-		String javaCmd = "java -Xmx4G -Xms1G"
-				+ " -Dforbric.compatibilityPolicy=continue"
-				+ " -Dforbric.serverMode=" + serverMode
-				+ " -jar forbric-next-server-" + mcVersion + ".jar nogui";
-
-		Files.writeString(dir.resolve("start.sh"),
-				"#!/usr/bin/env bash\n" +
+		// 安装器不自带 vanilla server.jar——用户需自行下载 MC server.jar 到本目录。
+		// start.sh 用 classpath 方式拉起 Forbric launcher Main，而不是引用不存在的 fat jar。
+		String shebang = "#!/usr/bin/env bash\n";
+		String header =
 				"# Forbric-NEXT server start script for MC " + mcVersion + "\n" +
 				"cd \"$(dirname \"$0\")\"\n" +
-				javaCmd + "\n");
+				"\n" +
+				"# Pick java: prefer JAVA_HOME, fall back to PATH\n" +
+				"if [ -n \"$JAVA_HOME\" ] && [ -x \"$JAVA_HOME/bin/java\" ]; then\n" +
+				"\tJAVA=\"$JAVA_HOME/bin/java\"\n" +
+				"else\n" +
+				"\tJAVA=java\n" +
+				"fi\n" +
+				"\n" +
+				"# Forbric-NEXT does not bundle the vanilla server.jar.\n" +
+				"# Download it from Mojang and place it next to this script, e.g.:\n" +
+				"#   wget https://piston-data.mojang.com/.../server.jar\n" +
+				"if [ ! -f server.jar ]; then\n" +
+				"\techo \"ERROR: server.jar not found in $(pwd).\"\n" +
+				"\techo \"Please download the vanilla Minecraft server.jar first (see README).\"\n" +
+				"\texit 1\n" +
+				"fi\n" +
+				"\n" +
+				"exec \"$JAVA\" -Xmx4G -Xms1G" +
+				" -Dforbric.compatibilityPolicy=continue" +
+				" -Dforbric.serverMode=" + serverMode +
+				" -Dforbric.gameDir=\"$(pwd)\"" +
+				" -cp \"server.jar:lib/*\"" +
+				" net.forbric.next.launcher.Main nogui\n";
+
+		Files.writeString(dir.resolve("start.sh"), shebang + header);
 		dir.resolve("start.sh").toFile().setExecutable(true);
 
-		Files.writeString(dir.resolve("start.bat"),
+		String bat =
 				"@echo off\r\n" +
 				"rem Forbric-NEXT server start script for MC " + mcVersion + "\r\n" +
 				"cd /d \"%~dp0\"\r\n" +
-				javaCmd + "\r\n" +
-				"pause\r\n");
+				"\r\n" +
+				"if defined JAVA_HOME (\r\n" +
+				"\tset JAVA=%JAVA_HOME%\\bin\\java.exe\r\n" +
+				") else (\r\n" +
+				"\tset JAVA=java\r\n" +
+				")\r\n" +
+				"\r\n" +
+				"if not exist server.jar (\r\n" +
+				"\techo ERROR: server.jar not found in %CD%.\r\n" +
+				"\techo Please download the vanilla Minecraft server.jar first.\r\n" +
+				"\texit /b 1\r\n" +
+				")\r\n" +
+				"\r\n" +
+				"\"%JAVA%\" -Xmx4G -Xms1G" +
+				" -Dforbric.compatibilityPolicy=continue" +
+				" -Dforbric.serverMode=" + serverMode +
+				" -Dforbric.gameDir=\"%CD%\"" +
+				" -cp \"server.jar;lib/*\"" +
+				" net.forbric.next.launcher.Main nogui\r\n" +
+				"pause\r\n";
+		Files.writeString(dir.resolve("start.bat"), bat);
 
 		System.out.println("  Scripts:     start.sh, start.bat written");
 	}

@@ -123,6 +123,8 @@ public class FabricModLoader implements ModLoader {
 			}
 			case GAME_STARTED -> {
 				NextLog.info("FabricModLoader: GAME_STARTED → 触发 server lifecycle 事件");
+				// 修复：之前这里把 SERVER_STARTING 连打了两遍，且从不触发 SERVER_STARTED。
+				// 按 Fabric 语义，服务器启动窗口依次是 starting → started。
 				ServerLifecycleEvents.SERVER_STARTING.invoker().run();
 				ServerLifecycleEvents.SERVER_STARTED.invoker().run();
 			}

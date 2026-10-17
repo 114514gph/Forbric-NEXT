@@ -93,12 +93,17 @@ java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --s
 
 | 能跑的 | 还是骨架的 |
 |--------|-----------|
-| 四系（Fabric/Forge/NeoForge/Quilt）mod 识别 | 真正的 mod 发现（从 0.3.0 移植） |
-| 最小 fabric-api 事件桥（服务端/客户端生命周期事件） | Mixin 接线 |
+| 9 阶段生命周期跨 loader 跑通 | Mixin 接线 |
+| Fabric / Quilt mod 发现（解析 fabric.mod.json / quilt.mod.json） | 真正启动 Minecraft |
+| Forge / NeoForge mod 识别（扫描 META-INF/mods.toml / neoforge.mods.toml） | Forge / NeoForge mod 加载与运行时（mod classloader / mod-bus 未接） |
+| Fabric entrypoint 执行（preLaunch→main→client→server，单 mod 失败隔离） | Fabric mod 在真实 MC JVM 内运行 |
+| 加载报告（.forbric-next/load-report.txt） | |
+| 最小 fabric-api 事件桥（服务端/客户端生命周期 + 方块/物品注册） | |
 | 版本适配层 SPI（1.18/1.20/1.21/26.x 接口定义好了） | 功能性版本适配器（只有 26.x 标记了 functional） |
 | Bukkit 混合端 SPI（接口定义好了） | Bukkit 插件加载器实现 |
-| 客户端 GUI 安装器 + 服务端 CLI 安装器 | 真正的游戏文件下载（骨架只建目录结构） |
+| 客户端 GUI 安装器 + 服务端 CLI 安装器（生成 start.sh/start.bat） | 真正的游戏文件下载（用户需自行放 vanilla server.jar） |
 | 硬依赖缺失校验（启动前报错退出） | |
+| 24 个自动化测试（发现/排序/entrypoint/编排器/事件桥/版本表） | |
 
 **支持的 MC 版本**（安装器版本表，已对照官方页面验证）：
 

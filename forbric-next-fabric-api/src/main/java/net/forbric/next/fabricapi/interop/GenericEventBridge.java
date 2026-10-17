@@ -81,4 +81,19 @@ public final class GenericEventBridge {
 	public static void fireRegisterItems() {
 		REGISTER_ITEMS.invoker().run();
 	}
+
+	/** 触发所有"服务端启动完成"回调。 */
+	public static void fireServerStarted() {
+		ServerLifecycleEvents.SERVER_STARTED.invoker().run();
+	}
+
+	/** 触发所有"服务端即将停止"回调。 */
+	public static void fireServerStopping() {
+		ServerLifecycleEvents.SERVER_STOPPING.invoker().run();
+	}
+
+	/** 触发所有"服务端完全停止"回调。 */
+	public static void fireServerStopped() {
+		ServerLifecycleEvents.SERVER_STOPPED.invoker().run();
+	}
 }
