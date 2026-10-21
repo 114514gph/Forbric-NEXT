@@ -46,12 +46,12 @@ public final class InstallerVersionCatalog {
 				"Both Forge and NeoForge available"));
 		CATALOG.put("1.21.1", new CatalogEntry(
 				"1.21.1", true,
-				"0.16.14+1.21.1", "52.1.16", "21.1.45",
+				"0.16.14+1.21.1", "52.1.20", "21.1.45",
 				"Current most-popular modded version; NeoForge 21.1.45"));
 		CATALOG.put("1.21.11", new CatalogEntry(
 				"1.21.11", true,
-				"0.16.14+1.21.11", "61.2.1", "21.11.40-beta",
-				"Latest 1.21.x patch; Forge 61.2.1, NeoForge 21.11.40-beta"));
+				"0.16.14+1.21.11", "61.2.4", "21.11.40-beta",
+				"Latest 1.21.x patch; Forge 61.2.4, NeoForge 21.11.40-beta"));
 		CATALOG.put("26.3", new CatalogEntry(
 				"26.3", true,
 				"0.155.2+26.3", null, "26.3.0.76",
