@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "net.forbric.next.mixin.testmod",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ForbricTestMixin"
+  ],
+  "server": [],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

@@ -1,0 +1,29 @@
+plugins { id 'java-library' }
+
+description = 'Real Sponge Mixin weaving layer + mod classloader isolation'
+
+// Mixin 相关依赖走阿里云镜像优先，Fabric 仓库兜底。
+// 注意：官方 org.spongepowered:mixin:0.8.5 最高只支持 JAVA_18 兼容级别，
+// 织不动 MC 1.21.1 的 Java 21 字节码；真实运行用 Fabric 维护的 sponge-mixin fork
+// （包名仍是 org.spongepowered.asm，API 完全兼容，且支持 JAVA_21）。
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.fabricmc.net/' }
+    maven { url 'https://repo.spongepowered.org/repository/maven-public/' }
+    mavenCentral()
+}
+
+dependencies {
+    api project(':forbric-next-common')
+    api project(':forbric-next-loader-api')
+
+    // Sponge Mixin（Fabric fork，支持 Java 21 字节码）。
+    api 'net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7'
+    // Mixin 底层用的 ASM，必须和 fabric profile 对齐。
+    api 'org.ow2.asm:asm:9.7.1'
+    api 'org.ow2.asm:asm-tree:9.7.1'
+    api 'org.ow2.asm:asm-commons:9.7.1'
+    api 'org.ow2.asm:asm-util:9.7.1'
+    // MixinExtras（可选）：让 mixin 能 @WrapOperation/@ModifyExpressionValue。
+    api 'io.github.llamalad7:mixinextras-common:0.4.1'
+}

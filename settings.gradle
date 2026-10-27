@@ -26,3 +26,6 @@ include ':forbric-next-server-installer'
 // 跨版本老 mod 运行时字节码重映射层：把 1.20.4/1.21.1 老 mod 的 class 引用
 // 重写到当前 MC 版本（骨架阶段只重写常量池里的类名 UTF-8 条目）。
 include ':forbric-next-remapper'
+// 真·Mixin 织入层：封装 Sponge Mixin 的 MixinEnvironment / MixinTransformer，
+// 外加 mods 目录的 URLClassLoader 隔离。和 forbric-next-fabric 平级，不反向依赖。
+include ':forbric-next-mixin'
