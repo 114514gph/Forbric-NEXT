@@ -27,6 +27,12 @@ class FabricLoadOrderTest {
 				null, Map.of(), depends == null ? Map.of() : depends);
 	}
 
+	/** 造一个带具体 jar 路径的 DiscoveredFabricMod（用来区分冲突里的是哪几个 jar）。 */
+	private static DiscoveredFabricMod modWithJar(String id, String jarName) {
+		return new DiscoveredFabricMod(id, "1.0.0", id, Ecosystem.FABRIC,
+				java.nio.file.Path.of("/tmp", jarName), Map.of(), Map.of());
+	}
+
 	@Test
 	void ordersByIdLexicographically() {
 		// 故意打乱插入顺序
@@ -94,5 +100,24 @@ class FabricLoadOrderTest {
 		Result result = FabricLoadOrder.order(input);
 		assertEquals(1, result.ordered().size());
 		assertTrue(result.skipped().isEmpty(), "平台级依赖 key 不应导致 mod 被跳过");
+	}
+
+	@Test
+	void duplicateModIdIsReportedAsConflictNotSilentlySwallowed() {
+		// 同一个 id "jei" 出现在两个不同 jar 里 → 必须明确记一条冲突
+		List<DiscoveredFabricMod> input = List.of(
+				modWithJar("jei", "jei-1.jar"),
+				modWithJar("jei", "jei-2.jar"),
+				modWithJar("solo", "solo.jar"));
+
+		Result result = FabricLoadOrder.order(input);
+
+		assertEquals(1, result.conflicts().size(), "重复 id 应产生一条冲突记录");
+		Result.ModConflict c = result.conflicts().get(0);
+		assertEquals("jei", c.modId());
+		assertTrue(c.jarNames().contains("jei-1.jar") && c.jarNames().contains("jei-2.jar"),
+				"冲突记录要指出是哪两个 jar 撞了 id");
+		// solo 不冲突
+		assertTrue(result.conflicts().stream().noneMatch(x -> x.modId().equals("solo")));
 	}
 }

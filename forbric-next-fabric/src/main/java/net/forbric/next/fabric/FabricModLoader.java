@@ -1,8 +1,10 @@
 package net.forbric.next.fabric;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,7 @@ import net.forbric.next.fabric.FabricLoadOrder.Result;
 import net.forbric.next.fabric.FabricModDiscovery.DiscoveredFabricMod;
 import net.forbric.next.fabricapi.event.ClientLifecycleEvents;
 import net.forbric.next.fabricapi.event.ServerLifecycleEvents;
+import net.forbric.next.remap.ModRemapPipeline;
 
 /**
  * Fabric ecosystem loader.
@@ -65,12 +68,59 @@ public class FabricModLoader implements ModLoader {
 		rawDiscovered.clear();
 		rawDiscovered.addAll(FabricModDiscovery.discover(context.modsDir()));
 
+		// 跨版本老 mod 兼容：检查每个 mod 声明的 depends.minecraft 是否对得上当前运行版本，
+		// 对不上就走重映射管道，把 jar 换成重映射后的新 jar。
+		String currentMcVersion = currentMcVersion();
+		List<DiscoveredFabricMod> remapped = new ArrayList<>();
+		for (DiscoveredFabricMod m : rawDiscovered) {
+			remapped.add(remapIfVersionMismatch(m, currentMcVersion));
+		}
+		rawDiscovered.clear();
+		rawDiscovered.addAll(remapped);
+
 		// 转成中立 ModCandidate 返回给 boot orchestrator（boot 不读内部细节）。
 		List<ModCandidate> candidates = new ArrayList<>();
 		for (DiscoveredFabricMod m : rawDiscovered) {
 			candidates.add(new ModCandidate(m.id(), m.version(), m.ecosystem(), m.jarPath(), List.of()));
 		}
 		return candidates;
+	}
+
+	/**
+	 * 当前运行的 MC 版本。骨架阶段从系统属性 {@code forbric.mc.version} 读，
+	 * 缺省 {@code 26.3}（Forbric-NEXT 的目标基线）。后续由 boot 阶段从版本清单里注入。
+	 */
+	private static String currentMcVersion() {
+		return System.getProperty("forbric.mc.version", "26.3");
+	}
+
+	/**
+	 * 如果 mod 声明的 MC 版本和当前运行版本对不上，走 {@link ModRemapPipeline} 重映射，
+	 * 返回一个 jarPath 换成重映射产物的新 record；否则原样返回。
+	 *
+	 * <p>骨架阶段：fabric.mod.json 里 {@code depends.minecraft} 是 {@code ~1.20.4} 这种，
+	 * 管道会自己抠版本号并打 "Remapping mod X from MC 1.20.4 to 26.3" 日志。
+	 */
+	private DiscoveredFabricMod remapIfVersionMismatch(DiscoveredFabricMod m, String currentMcVersion) {
+		String mcRange = m.depends() == null ? null : m.depends().get("minecraft");
+		if (mcRange == null) {
+			// 没声明 MC 依赖，骨架阶段假设兼容，不重映射
+			return m;
+		}
+		if (!ModRemapPipeline.needsRemap(m.jarPath(), currentMcVersion)) {
+			return m;
+		}
+		try {
+			NextLog.info("Remapping mod {} from MC {} to {}",
+					m.id(), mcRange, currentMcVersion);
+			Path remappedJar = ModRemapPipeline.remapModJar(m.jarPath(), currentMcVersion);
+			return new DiscoveredFabricMod(m.id(), m.version(), m.name(), m.ecosystem(),
+					remappedJar, m.entrypoints(), m.depends(), m.mixinConfigs(), m.parentJar());
+		} catch (IOException e) {
+			// 重映射失败：不要因为一个老 mod 炸掉整个启动，回退到原 jar 并打 WARN
+			NextLog.warn("FabricModLoader: mod {} 重映射失败，回退用原 jar: {}", m.id(), e.getMessage());
+			return m;
+		}
 	}
 
 	@Override
@@ -89,6 +139,9 @@ public class FabricModLoader implements ModLoader {
 			NextLog.warn("FabricModLoader: 跳过 mod '{}'，缺少前置: {}",
 					s.mod().id(), s.missingDeps());
 		}
+
+		// 注册表冲突单独记一段——不能像上游那样被 catch 静默吞掉
+		report.addConflicts(result.conflicts());
 
 		// 建一个能加载所有 mod jar 的 URLClassLoader
 		this.executor = new FabricEntrypointExecutor(buildModClassLoader(ordered));
@@ -115,7 +168,8 @@ public class FabricModLoader implements ModLoader {
 				if (context != null && context.environment() == LoadContext.Environment.CLIENT) {
 					NextLog.info("FabricModLoader: SIDED_SETUP (CLIENT) → client entrypoints");
 					report.addFailures(executor.executeGroup(FabricEntrypointExecutor.CLIENT, ordered));
-					ClientLifecycleEvents.CLIENT_STARTED.invoker().run();
+					ClientLifecycleEvents.CLIENT_STARTED.invoker()
+							.accept(new net.forbric.next.fabricapi.event.ClientStartedEvent("Minecraft"));
 				} else {
 					NextLog.info("FabricModLoader: SIDED_SETUP (SERVER) → server entrypoints");
 					report.addFailures(executor.executeGroup(FabricEntrypointExecutor.SERVER, ordered));
@@ -125,8 +179,12 @@ public class FabricModLoader implements ModLoader {
 				NextLog.info("FabricModLoader: GAME_STARTED → 触发 server lifecycle 事件");
 				// 修复：之前这里把 SERVER_STARTING 连打了两遍，且从不触发 SERVER_STARTED。
 				// 按 Fabric 语义，服务器启动窗口依次是 starting → started。
-				ServerLifecycleEvents.SERVER_STARTING.invoker().run();
-				ServerLifecycleEvents.SERVER_STARTED.invoker().run();
+				// 事件现在带具体 record 上下文（服务端目录），不再是无参 Runnable。
+				Path gameDir = context != null ? context.gameDir() : null;
+				ServerLifecycleEvents.SERVER_STARTING.invoker()
+						.accept(new net.forbric.next.fabricapi.event.ServerStartingEvent(gameDir));
+				ServerLifecycleEvents.SERVER_STARTED.invoker()
+						.accept(new net.forbric.next.fabricapi.event.ServerStartedEvent(gameDir));
 			}
 			default -> { /* 其它阶段 Fabric 没有对应 entrypoint 组 */ }
 		}
@@ -135,9 +193,12 @@ public class FabricModLoader implements ModLoader {
 	@Override
 	public void onShutdown() {
 		NextLog.info("FabricModLoader: onShutdown → stopping/stopped 事件 + 写加载报告");
-		ServerLifecycleEvents.SERVER_STOPPING.invoker().run();
-		ServerLifecycleEvents.SERVER_STOPPED.invoker().run();
-		ClientLifecycleEvents.CLIENT_STOPPING.invoker().run();
+		Path gameDir = context != null ? context.gameDir() : null;
+		ServerLifecycleEvents.SERVER_STOPPING.invoker()
+				.accept(new net.forbric.next.fabricapi.event.ServerStoppingEvent(gameDir));
+		ServerLifecycleEvents.SERVER_STOPPED.invoker()
+				.accept(new net.forbric.next.fabricapi.event.ServerStoppedEvent(gameDir));
+		ClientLifecycleEvents.CLIENT_STOPPING.invoker().accept(new net.forbric.next.fabricapi.event.ClientStoppingEvent());
 
 		if (context != null) {
 			report.write(context.gameDir());

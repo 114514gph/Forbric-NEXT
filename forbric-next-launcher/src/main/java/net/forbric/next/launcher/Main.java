@@ -38,9 +38,10 @@ public final class Main {
 		);
 
 		// Demonstrate the fabric-api event bridge: a mod would call this from onInitialize().
-		ServerLifecycleEvents.SERVER_STARTED.register(() ->
+		// 事件回调现在是 Consumer<XxxEvent>，用 event 占位（骨架阶段不读上下文）。
+		ServerLifecycleEvents.SERVER_STARTED.register(event ->
 				NextLog.info("  [demo listener] server started hook fired"));
-		ServerLifecycleEvents.SERVER_STOPPED.register(() ->
+		ServerLifecycleEvents.SERVER_STOPPED.register(event ->
 				NextLog.info("  [demo listener] server stopped hook fired"));
 		NextLog.info("Registered demo server lifecycle listeners (language adapters available: {})",
 				LanguageAdapterRegistry.has("default") ? "default (Java)" : "none");

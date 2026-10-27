@@ -1,6 +1,7 @@
 package net.forbric.next.fabric;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import net.fabricmc.loader.api.EntrypointException;
 import net.forbric.next.api.Ecosystem;
 import net.forbric.next.fabric.FabricEntrypointExecutor.EntrypointFailure;
 import net.forbric.next.fabric.FabricModDiscovery.DiscoveredFabricMod;
@@ -80,5 +82,19 @@ class FabricEntrypointExecutorTest {
 		assertEquals(1, failures.size(), "只有坏 mod 记失败");
 		assertEquals("broken-mod", failures.get(0).modId());
 		assertEquals(1, HappyEntrypoint.INSTANTIATED.get(), "坏 mod 不应阻断后面好 mod 的实例化");
+	}
+
+	@Test
+	void failureIsReportedAsFabricEntrypointException() {
+		DiscoveredFabricMod mod = modWithEntrypoint("broken-mod",
+				FabricEntrypointExecutor.MAIN, "net.forbric.next.fabric.BrokenEntrypoint");
+
+		List<EntrypointFailure> failures = executor.executeGroup(FabricEntrypointExecutor.MAIN, List.of(mod));
+
+		assertEquals(1, failures.size());
+		// 失败必须用 Fabric 原生的 EntrypointException 包装（而不是裸 RuntimeException），
+		// 这样 mod 里 catch (EntrypointException) 才能链接成功。
+		assertInstanceOf(EntrypointException.class, failures.get(0).error(),
+				"entrypoint 失败应被包装成 net.fabricmc.loader.api.EntrypointException");
 	}
 }

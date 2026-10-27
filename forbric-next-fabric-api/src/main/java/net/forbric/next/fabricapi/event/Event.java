@@ -52,6 +52,32 @@ public final class Event<T> {
 		});
 	}
 
+	/**
+	 * Create an event whose listeners take a concrete event object (zero Proxy).
+	 *
+	 * <p>与 {@link #ofRunnable()} 并列：当事件需要携带上下文（游戏目录、窗口标题……）时用这个工厂，
+	 * 监听器是 {@code Consumer<T>}。invoker 是一个 {@code Consumer<T>}，把事件对象逐个 fan-out
+	 * 给所有监听器，且每个监听器单独 try/catch 隔离（和 runnable 版同样的容错语义）。
+	 *
+	 * <p><b>为什么不用 {@code java.lang.reflect.Proxy} 做事件上下文：</b>Proxy 类的
+	 * {@code equals()} 不对、接口加新方法会抛 {@link UnsupportedOperationException}、mod 里
+	 * {@code instanceof} 检查也会失败。这里一律用具体 record / class 作为事件类型，彻底避开这些坑。
+	 */
+	public static <T> Event<Consumer<T>> ofConsumer() {
+		return new Event<>(listeners -> event -> {
+			int index = 0;
+			for (Consumer<T> l : listeners) {
+				try {
+					l.accept(event);
+				} catch (Throwable t) {
+					net.forbric.next.common.NextLog.error(
+							"Event: 第 {} 个监听器执行失败，已隔离并继续分发: {}", index, t.toString());
+				}
+				index++;
+			}
+		});
+	}
+
 	/** Register a listener. */
 	public void register(T listener) {
 		listeners.add(listener);

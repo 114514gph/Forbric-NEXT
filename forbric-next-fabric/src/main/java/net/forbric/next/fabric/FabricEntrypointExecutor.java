@@ -3,6 +3,7 @@ package net.forbric.next.fabric;
 import java.util.List;
 import java.util.Map;
 
+import net.fabricmc.loader.api.EntrypointException;
 import net.forbric.next.common.NextLog;
 import net.forbric.next.fabric.FabricModDiscovery.DiscoveredFabricMod;
 import net.forbric.next.fabricapi.language.LanguageAdapterRegistry;
@@ -70,7 +71,11 @@ public final class FabricEntrypointExecutor {
 						NextLog.error("      caused by: {}", cause.toString());
 						cause = cause.getCause();
 					}
-					failures.add(new EntrypointFailure(mod.id(), groupName, className, t));
+					// 用 Fabric 原生的 EntrypointException 包装失败，而不是随便抛个 RuntimeException——
+					// 这样 mod 里 catch (EntrypointException) 才能链接成功、也能按原版语义识别 entrypoint 失败。
+					EntrypointException wrapped = new EntrypointException(
+							"mod '" + mod.id() + "' entrypoint '" + className + "' 执行失败", t);
+					failures.add(new EntrypointFailure(mod.id(), groupName, className, wrapped));
 				}
 			}
 		}

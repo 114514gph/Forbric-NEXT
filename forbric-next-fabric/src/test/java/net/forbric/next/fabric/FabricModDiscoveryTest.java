@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -104,5 +105,59 @@ class FabricModDiscoveryTest {
 
 		List<DiscoveredFabricMod> mods = FabricModDiscovery.discover(modsDir);
 		assertTrue(mods.isEmpty(), "没有任何 mod 元数据的 jar 应被跳过");
+	}
+
+	/** 把若干 entry（路径 → 内容字节）写进一个 jar，返回 jar 的字节。 */
+	private static byte[] buildJarBytes(Map<String, byte[]> entries) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try (JarOutputStream jos = new JarOutputStream(baos)) {
+			for (Map.Entry<String, byte[]> e : entries.entrySet()) {
+				jos.putNextEntry(new JarEntry(e.getKey()));
+				jos.write(e.getValue());
+				jos.closeEntry();
+			}
+		}
+		return baos.toByteArray();
+	}
+
+	@Test
+	void discoversNestedJijModWithParentJar(@TempDir Path modsDir) throws IOException {
+		// 嵌套 jar 自身的 fabric.mod.json
+		byte[] nestedJar = buildJarBytes(Map.of("fabric.mod.json",
+				"{\"id\":\"mixinextras\",\"version\":\"0.2.0\"}".getBytes(StandardCharsets.UTF_8)));
+		// 外层 mod jar：自己的 fabric.mod.json + META-INF/jars/mixinextras.jar（裸字节）
+		byte[] outerJar = buildJarBytes(Map.of(
+				"fabric.mod.json",
+				"{\"id\":\"loader\",\"version\":\"1.0.0\"}".getBytes(StandardCharsets.UTF_8),
+				"META-INF/jars/mixinextras.jar", nestedJar));
+		Files.write(modsDir.resolve("loader.jar"), outerJar);
+
+		List<DiscoveredFabricMod> mods = FabricModDiscovery.discover(modsDir);
+
+		// 外层 mod + 嵌套 mod 都应被发现
+		assertEquals(2, mods.size(), "外层 mod 与它 JiJ 的嵌套 mod 都应进入候选列表");
+		DiscoveredFabricMod outer = mods.stream().filter(m -> m.id().equals("loader")).findFirst().orElseThrow();
+		DiscoveredFabricMod nested = mods.stream().filter(m -> m.id().equals("mixinextras")).findFirst().orElseThrow();
+		assertTrue(outer.parentJar() == null, "外层 mod 的 parentJar 应为 null");
+		assertEquals(outer.jarPath(), nested.parentJar(),
+				"嵌套 mod 的 parentJar 必须指向外层 mod jar");
+	}
+
+	@Test
+	void readsDeclaredMixinConfigsFromFabricModJson(@TempDir Path modsDir) throws IOException {
+		// "mixins" 字段：既有纯字符串，也有对象形式 {"config": ...}
+		writeJar(modsDir.resolve("modmenu.jar"), Map.of(
+				"fabric.mod.json",
+				"{\"id\":\"modmenu\",\"version\":\"1.0.0\",\"mixins\":["
+						+ "\"modmenu.mixins.json\","
+						+ "{\"config\":\"modmenu.mixins.modmenu.json\",\"environment\":\"*\"}]}"));
+
+		List<DiscoveredFabricMod> mods = FabricModDiscovery.discover(modsDir);
+
+		assertEquals(1, mods.size());
+		List<String> mixins = mods.get(0).mixinConfigs();
+		assertEquals(2, mixins.size(), "字符串形式与对象形式的 config 名都应被读出");
+		assertTrue(mixins.contains("modmenu.mixins.json"));
+		assertTrue(mixins.contains("modmenu.mixins.modmenu.json"));
 	}
 }

@@ -1,8 +1,17 @@
 package net.forbric.next.fabricapi.interop;
 
+import java.nio.file.Path;
+import java.util.function.Consumer;
+
 import net.forbric.next.fabricapi.event.ClientLifecycleEvents;
+import net.forbric.next.fabricapi.event.ClientStartedEvent;
+import net.forbric.next.fabricapi.event.ClientStoppingEvent;
 import net.forbric.next.fabricapi.event.Event;
 import net.forbric.next.fabricapi.event.ServerLifecycleEvents;
+import net.forbric.next.fabricapi.event.ServerStartedEvent;
+import net.forbric.next.fabricapi.event.ServerStartingEvent;
+import net.forbric.next.fabricapi.event.ServerStoppedEvent;
+import net.forbric.next.fabricapi.event.ServerStoppingEvent;
 
 /**
  * 通用接缝层（Generic Interop）。
@@ -11,12 +20,11 @@ import net.forbric.next.fabricapi.event.ServerLifecycleEvents;
  * 加一个 {@code if modId.equals(...)}。NEXT 反其道而行——暴露一组与具体 mod 无关的通用回调，
  * 任何 mod / 适配层都通过这组接口注册钩子，游戏事件发生时统一触发。
  *
- * <p>本类是纯静态门面：
- * <ul>
- *   <li>客户端 / 服务端生命周期回调 → 委托给已有的
- *       {@link ClientLifecycleEvents} / {@link ServerLifecycleEvents}，避免双份总线。</li>
- *   <li>方块 / 物品注册阶段 → 本类自己持有 {@link Event} 单例，由 boot 在注册窗口触发。</li>
- * </ul>
+ * <p><b>事件上下文用具体 record，不用 Proxy：</b>生命周期回调从无参 {@link Runnable} 升级为
+ * {@code Consumer<XxxEvent>}，事件对象是具体 record（{@link ServerStartedEvent} 等）。
+ * 这样 mod 既能拿到上下文（游戏目录 / 窗口标题），又不会踩 Proxy 的坑——
+ * equals() 正确、{@code instanceof} 可用、以后给事件加字段也不会抛 UnsupportedOperationException。
+ * 方块 / 物品注册事件不携带上下文，仍是无参 Runnable。
  *
  * <p>没有任何 per-mod 分支，没有硬编码 mod id。
  */
@@ -24,37 +32,37 @@ public final class GenericEventBridge {
 
 	private GenericEventBridge() {}
 
-	/** 方块注册阶段事件（注册窗口 unfreeze 时触发）。 */
+	/** 方块注册阶段事件（注册窗口 unfreeze 时触发）。无上下文，保持 Runnable。 */
 	public static final Event<Runnable> REGISTER_BLOCKS = Event.ofRunnable();
-	/** 物品注册阶段事件。 */
+	/** 物品注册阶段事件。无上下文，保持 Runnable。 */
 	public static final Event<Runnable> REGISTER_ITEMS = Event.ofRunnable();
 
 	// ---- 客户端生命周期（委托到 ClientLifecycleEvents）----
 
 	/** 客户端启动完成（主窗口已显示）。 */
-	public static void onClientStarted(Runnable hook) {
+	public static void onClientStarted(Consumer<ClientStartedEvent> hook) {
 		ClientLifecycleEvents.CLIENT_STARTED.register(hook);
 	}
 
 	/** 客户端即将关闭。 */
-	public static void onClientStopping(Runnable hook) {
+	public static void onClientStopping(Consumer<ClientStoppingEvent> hook) {
 		ClientLifecycleEvents.CLIENT_STOPPING.register(hook);
 	}
 
 	// ---- 服务端生命周期（委托到 ServerLifecycleEvents）----
 
 	/** 服务端启动完成（已加载所有 dimension、开始接受连接）。 */
-	public static void onServerStarted(Runnable hook) {
+	public static void onServerStarted(Consumer<ServerStartedEvent> hook) {
 		ServerLifecycleEvents.SERVER_STARTED.register(hook);
 	}
 
 	/** 服务端即将停止（保存之前）。 */
-	public static void onServerStopping(Runnable hook) {
+	public static void onServerStopping(Consumer<ServerStoppingEvent> hook) {
 		ServerLifecycleEvents.SERVER_STOPPING.register(hook);
 	}
 
 	/** 服务端完全停止。 */
-	public static void onServerStopped(Runnable hook) {
+	public static void onServerStopped(Consumer<ServerStoppedEvent> hook) {
 		ServerLifecycleEvents.SERVER_STOPPED.register(hook);
 	}
 
@@ -82,18 +90,33 @@ public final class GenericEventBridge {
 		REGISTER_ITEMS.invoker().run();
 	}
 
-	/** 触发所有"服务端启动完成"回调。 */
-	public static void fireServerStarted() {
-		ServerLifecycleEvents.SERVER_STARTED.invoker().run();
+	/** 触发所有"服务端即将开始 tick"回调。 */
+	public static void fireServerStarting(Path serverDirectory) {
+		ServerLifecycleEvents.SERVER_STARTING.invoker().accept(new ServerStartingEvent(serverDirectory));
 	}
 
-	/** 触发所有"服务端即将停止"回调。 */
-	public static void fireServerStopping() {
-		ServerLifecycleEvents.SERVER_STOPPING.invoker().run();
+	/** 触发所有"服务端启动完成"回调，传入服务端目录作为上下文。 */
+	public static void fireServerStarted(Path serverDirectory) {
+		ServerLifecycleEvents.SERVER_STARTED.invoker().accept(new ServerStartedEvent(serverDirectory));
 	}
 
-	/** 触发所有"服务端完全停止"回调。 */
-	public static void fireServerStopped() {
-		ServerLifecycleEvents.SERVER_STOPPED.invoker().run();
+	/** 触发所有"服务端即将停止"回调，传入服务端目录作为上下文。 */
+	public static void fireServerStopping(Path serverDirectory) {
+		ServerLifecycleEvents.SERVER_STOPPING.invoker().accept(new ServerStoppingEvent(serverDirectory));
+	}
+
+	/** 触发所有"服务端完全停止"回调，传入服务端目录作为上下文。 */
+	public static void fireServerStopped(Path serverDirectory) {
+		ServerLifecycleEvents.SERVER_STOPPED.invoker().accept(new ServerStoppedEvent(serverDirectory));
+	}
+
+	/** 触发所有"客户端启动完成"回调，传入窗口标题作为上下文。 */
+	public static void fireClientStarted(String windowTitle) {
+		ClientLifecycleEvents.CLIENT_STARTED.invoker().accept(new ClientStartedEvent(windowTitle));
+	}
+
+	/** 触发所有"客户端即将关闭"回调。 */
+	public static void fireClientStopping() {
+		ClientLifecycleEvents.CLIENT_STOPPING.invoker().accept(new ClientStoppingEvent());
 	}
 }

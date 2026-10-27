@@ -110,4 +110,27 @@ class BootOrchestratorTest {
 		// broken loader 自己也被推进了所有 phase（只是每个都报错）
 		assertEquals(LoadPhase.values().length, broken.phasesRun.size());
 	}
+
+	@Test
+	void globalCatalogAggregatesAcrossLoadersForEntrypointLookup(@TempDir Path dir) {
+		DefaultBootOrchestrator orch = new DefaultBootOrchestrator();
+
+		// SpectreLib 同时被 Fabric 和 NeoForge 两个 loader 发现（同一个 id）；
+		// CherishedWorlds 只在 Fabric 侧。
+		FakeModLoader fabric = new FakeModLoader(Ecosystem.FABRIC,
+				List.of(cand("spectrelib", dir), cand("cherishedworlds", dir)));
+		FakeModLoader neoforge = new FakeModLoader(Ecosystem.MINECRAFTFORGE,
+				List.of(cand("spectrelib", dir)));
+
+		orch.installLoaders(List.of(fabric, neoforge));
+		orch.discover(ctx(dir));
+
+		// 全局 catalog 汇总了所有 loader 发现的 mod（含重复 id）
+		assertEquals(3, orch.globalCatalog().size(),
+				"全局 catalog 应汇总所有 loader 发现的 mod，不按 loader 裁剪");
+		// entrypoint 查找是全局的：spectrelib 即便主要由 NeoForge 发现，Fabric 侧也查得到
+		assertEquals("spectrelib", orch.findGlobally("spectrelib").id());
+		assertEquals("cherishedworlds", orch.findGlobally("cherishedworlds").id());
+		assertTrue(orch.findGlobally("does-not-exist") == null, "找不到的 id 返回 null");
+	}
 }

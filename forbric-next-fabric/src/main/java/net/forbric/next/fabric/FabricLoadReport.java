@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.forbric.next.common.NextLog;
+import net.forbric.next.fabric.FabricLoadOrder.Result;
+import net.forbric.next.fabric.FabricLoadOrder.Result.ModConflict;
 import net.forbric.next.fabric.FabricLoadOrder.Result.SkippedMod;
 import net.forbric.next.fabric.FabricModDiscovery.DiscoveredFabricMod;
 
@@ -32,6 +34,7 @@ public final class FabricLoadReport {
 	private final List<DiscoveredFabricMod> succeeded = new ArrayList<>();
 	private final List<FabricEntrypointExecutor.EntrypointFailure> failures = new ArrayList<>();
 	private final List<SkippedMod> skipped = new ArrayList<>();
+	private final List<ModConflict> conflicts = new ArrayList<>();
 
 	/** 记一个成功加载的 mod。 */
 	public void addSuccess(DiscoveredFabricMod mod) {
@@ -46,6 +49,11 @@ public final class FabricLoadReport {
 	/** 记一批因缺前置被跳过的 mod。 */
 	public void addSkipped(List<SkippedMod> ss) {
 		skipped.addAll(ss);
+	}
+
+	/** 记一批"同一个 mod id 被多个 jar 声明"的注册表冲突。 */
+	public void addConflicts(List<ModConflict> cs) {
+		conflicts.addAll(cs);
 	}
 
 	/**
@@ -89,10 +97,18 @@ public final class FabricLoadReport {
 						.append(" 缺少: ").append(String.join(", ", s.missingDeps())).append('\n');
 			}
 			sb.append('\n');
+
+			sb.append("【注册表冲突】(").append(conflicts.size()).append(" 条)\n");
+			for (ModConflict c : conflicts) {
+				sb.append("  - mod id '").append(c.modId())
+						.append("' 被多个 jar 声明: ").append(String.join(", ", c.jarNames())).append('\n');
+			}
+			sb.append('\n');
 			sb.append("========================================\n");
 			sb.append("合计: 成功 ").append(succeeded.size())
 					.append(" / 失败 ").append(failures.size())
-					.append(" / 跳过 ").append(skipped.size()).append('\n');
+					.append(" / 跳过 ").append(skipped.size())
+					.append(" / 冲突 ").append(conflicts.size()).append('\n');
 
 			Files.writeString(reportFile, sb.toString(),
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

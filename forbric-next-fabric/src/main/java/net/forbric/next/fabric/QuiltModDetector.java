@@ -54,6 +54,7 @@ public final class QuiltModDetector {
 	 * @param name         人类可读名称（fabric.mod.json 的 "name"，可能为 null）
 	 * @param entrypoints entrypoint 组 → 入口类列表（组名如 main / client / server）
 	 * @param depends      mod id → 版本约束字符串（仅记录，骨架阶段不做版本范围校验）
+	 * @param mixinConfigs fabric.mod.json "mixins" 字段声明的 mixin config 文件名列表
 	 * @param ecosystem   识别出的生态系（QUILT 或 FABRIC）
 	 */
 	public record QuiltModMetadata(String id,
@@ -61,6 +62,7 @@ public final class QuiltModDetector {
 								   String name,
 								   Map<String, List<String>> entrypoints,
 								   Map<String, String> depends,
+								   List<String> mixinConfigs,
 								   Ecosystem ecosystem) {
 	}
 
@@ -126,16 +128,23 @@ public final class QuiltModDetector {
 			Map<String, String> depends = normalizeDepends(
 					ql != null ? ql.get("depends") : null,
 					fabricRoot != null ? fabricRoot.get("depends") : null);
+			// mixin configs：优先 quilt_loader.mixins，回退 fabric 顶层 "mixins"。
+			// 不能只靠文件名 *.mixins.json 识别——mod 可能在 fabric.mod.json 里自定义了 config 名
+			// （如 ModMenu 的 modmenu.mixins.modmenu.json）。这里先把名字读出来，真正接线留 TODO。
+			List<String> mixinConfigs = normalizeMixinConfigs(
+					ql != null ? ql.get("mixins") : null,
+					fabricRoot != null ? fabricRoot.get("mixins") : null);
 
-			return new QuiltModMetadata(id, version, name, entrypoints, depends, ecosystem);
+			return new QuiltModMetadata(id, version, name, entrypoints, depends, mixinConfigs, ecosystem);
 		}
 	}
 
 	/**
 	 * 把识别结果直接转成中立的 {@link ModCandidate}，供 catalog / 加载器消费。
 	 *
-	 * <p>JiJ（jar-in-jar）嵌套 jar 暂记为空列表——识别阶段只关心"这是谁"，嵌套 jar 的展开在
-	 * Fabric 加载路径里按 Fabric 原生规则处理（与本类解耦）。
+	 * <p>JiJ（jar-in-jar）嵌套 jar 的展开不在本类：本类只认"这一个 jar 是谁"，
+	 * 扫描外层 jar 的 {@code META-INF/jars/*.jar} 并把嵌套 mod 加入候选列表的逻辑在
+	 * {@link FabricModDiscovery#discoverNestedJars}（与本类解耦）。
 	 *
 	 * @param jar mod jar 路径
 	 * @return 带正确 Ecosystem 标记的 candidate
@@ -228,5 +237,28 @@ public final class QuiltModDetector {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * 规范化 "mixins" 字段：取第一个非 null 来源（quilt_loader.mixins 优先）。
+	 * 每个元素可能是：
+	 * <ul>
+	 *   <li>纯字符串 config 文件名：{@code "modmenu.mixins.json"}</li>
+	 *   <li>对象形式：{@code {"config": "modmenu.mixins.json", "environment": "*"}}</li>
+	 * </ul>
+	 * 这里只收集 config 文件名；environment 等过滤条件等真正接 mixin 时再用。
+	 */
+	private static List<String> normalizeMixinConfigs(Object quiltMixins, Object fabricMixins) {
+		List<String> out = new ArrayList<>();
+		Object chosen = quiltMixins != null ? quiltMixins : fabricMixins;
+		if (!(chosen instanceof List<?> list)) return out;
+		for (Object o : list) {
+			if (o instanceof String s) {
+				out.add(s);
+			} else if (o instanceof Map<?, ?> m && m.get("config") instanceof String cfg) {
+				out.add(cfg);
+			}
+		}
+		return out;
 	}
 }

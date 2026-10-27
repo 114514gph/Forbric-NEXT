@@ -4,4 +4,6 @@ dependencies {
     api project(':forbric-next-loader-api')
     api project(':forbric-next-fabric-api')
     implementation project(':forbric-next-common')
+    // 跨版本老 mod 运行时字节码重映射层（1.20.4/1.21.1 → 当前 MC 版本）
+    implementation project(':forbric-next-remapper')
 }
