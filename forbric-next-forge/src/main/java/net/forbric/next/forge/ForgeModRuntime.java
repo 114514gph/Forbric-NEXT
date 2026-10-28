@@ -75,7 +75,7 @@ public class ForgeModRuntime {
 				var method = mod.getClass().getDeclaredMethod(methodName);
 				method.setAccessible(true);
 				method.invoke(mod);
-				NextLog.debug("ForgeModRuntime: {} 调 {}()", mod.getClass().getSimpleName(), methodName);
+				NextLog.info("ForgeModRuntime: {} 调 {}()", mod.getClass().getSimpleName(), methodName);
 			} catch (NoSuchMethodException e) {
 				// 很多 mod 不实现所有阶段，正常跳过
 			} catch (Exception e) {
