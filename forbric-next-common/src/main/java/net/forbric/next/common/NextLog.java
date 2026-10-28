@@ -1,8 +1,7 @@
 package net.forbric.next.common;
 
 /**
- * Central log facade. The real implementation will route to log4j or the game's logger;
- * for the skeleton we keep it dependency-free.
+ * Central log facade. Routes to stdout with simple formatting — no external logging dependency.
  */
 public final class NextLog {
 	private NextLog() {}

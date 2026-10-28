@@ -165,11 +165,22 @@ public class FabricModLoader implements ModLoader {
 			}
 			case SIDED_SETUP -> {
 				// CLIENT_SETUP / SERVER_SETUP 概念上对应这里：按环境只跑一边。
-				if (context != null && context.environment() == LoadContext.Environment.CLIENT) {
-					NextLog.info("FabricModLoader: SIDED_SETUP (CLIENT) → client entrypoints");
-					report.addFailures(executor.executeGroup(FabricEntrypointExecutor.CLIENT, ordered));
-					ClientLifecycleEvents.CLIENT_STARTED.invoker()
-							.accept(new net.forbric.next.fabricapi.event.ClientStartedEvent("Minecraft"));
+				boolean wantClient = context != null
+						&& context.environment() == LoadContext.Environment.CLIENT;
+				if (wantClient) {
+					// 无头服务端（容器/SSH/启动脚本 -Dforbric.headless=true）即使 environment 被
+					// 标成 CLIENT，也没有显示器——硬跑 client entrypoint 会去碰 LWJGL/awt 直接崩。
+					// 这里显式检测并跳过，打一条带固定标记串的日志供启动校验 grep。
+					if (net.forbric.next.common.HeadlessMode.isHeadless()) {
+						NextLog.info("FabricModLoader: SIDED_SETUP (CLIENT requested but headless) "
+								+ "→ Skipping client entrypoints in headless mode");
+						// 不抛异常、不崩；客户端生命周期事件也不触发。
+					} else {
+						NextLog.info("FabricModLoader: SIDED_SETUP (CLIENT) → client entrypoints");
+						report.addFailures(executor.executeGroup(FabricEntrypointExecutor.CLIENT, ordered));
+						ClientLifecycleEvents.CLIENT_STARTED.invoker()
+								.accept(new net.forbric.next.fabricapi.event.ClientStartedEvent("Minecraft"));
+					}
 				} else {
 					NextLog.info("FabricModLoader: SIDED_SETUP (SERVER) → server entrypoints");
 					report.addFailures(executor.executeGroup(FabricEntrypointExecutor.SERVER, ordered));
@@ -207,8 +218,8 @@ public class FabricModLoader implements ModLoader {
 
 	/**
 	 * 建 URLClassLoader：把所有排好序的 mod jar 都放进去，parent 用当前 loader 的 classloader。
-	 * 骨架阶段所有 mod 共享一个 classloader（真实 Fabric 是每个 mod 独立 classloader，
-	 * 但骨架阶段共享一个就够"能用"了）。
+	 * 所有 mod 共享一个 classloader（真实 Fabric 是每个 mod 独立 classloader，
+	 * 共享模式足以满足当前阶段的 mod 加载需求）。
 	 */
 	private ClassLoader buildModClassLoader(List<DiscoveredFabricMod> mods) {
 		List<URL> urls = new ArrayList<>();

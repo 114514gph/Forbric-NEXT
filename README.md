@@ -89,21 +89,24 @@ The exact path depends on your launcher:
 
 ## Current status
 
-This is **alpha**. It compiles, the lifecycle runs end-to-end, and the event bridge fires correctly — but it doesn't actually launch Minecraft yet.
+This is **alpha**. It compiles, the lifecycle runs end-to-end, and we've verified real mod loading on MC 1.21.1 with Fabric Loader 0.16.10 — mixin weaving confirmed on vanilla `MinecraftServer`, server reaches `Done`.
 
-| What works | What's still a skeleton |
-|------------|------------------------|
-| 9-phase lifecycle across all loaders | Mixin wiring |
-| Fabric / Quilt mod discovery (parses fabric.mod.json / quilt.mod.json) | Actual Minecraft launch |
-| Forge / NeoForge mod detection (scans META-INF/mods.toml / neoforge.mods.toml) | Forge / NeoForge mod loading & runtime (mod classloader / mod-bus not wired) |
-| Fabric entrypoint execution (preLaunch→main→client→server, per-mod error isolation) | Fabric mod runtime inside a real MC JVM |
-| Load report (.forbric-next/load-report.txt) | |
-| Minimal fabric-api event bridge (Server/Client lifecycle + block/item registration) | |
-| Version adapter SPI (1.18 / 1.20 / 1.21 / 26.x interfaces) | Functional version adapters (only 26.x marked as such) |
-| Bukkit mixed-server SPI (interface defined) | Bukkit plugin loader implementation |
-| Client GUI installer + server CLI installer (writes start.sh/start.bat) | Real game file download (user must supply vanilla server.jar) |
+| What works | What's still in progress |
+|------------|--------------------------|
+| 9-phase lifecycle across all loaders | Forge / NeoForge mod runtime (mod-bus not wired) |
+| Fabric / Quilt mod discovery (parses fabric.mod.json / quilt.mod.json) | Functional version adapters (SPI defined, 26.x marked functional) |
+| Forge / NeoForge mod detection (scans META-INF/mods.toml / neoforge.mods.toml) | Bukkit plugin loader implementation |
+| Fabric entrypoint execution (preLaunch→main→client→server, per-mod error isolation) | Real game file download (user supplies vanilla server.jar) |
+| Mixin weaving (Sponge Mixin 0.8.7, verified on real MC 1.21.1) | |
+| Cross-version remapping (constant-pool class name rewriting) | |
+| Cross-ecosystem mod arbitration (dedup, conflict detection, forbric-mods.txt) | |
+| Load report + crash analysis (.forbric-next/) | |
+| Event bridge (Server/Client lifecycle + block/item registration) | |
+| Version adapter SPI (1.18 / 1.20 / 1.21 / 26.x interfaces) | |
+| Bukkit mixed-server SPI (interface defined) | |
+| Client GUI installer + server CLI installer | |
 | Hard dependency validation (fail boot on missing mandatory deps) | |
-| 24 automated tests (discovery / order / entrypoint / orchestrator / event bridge / version catalog) | |
+| 45+ automated tests | |
 
 **Supported MC versions** (installer catalog):
 
@@ -111,7 +114,7 @@ This is **alpha**. It compiles, the lifecycle runs end-to-end, and the event bri
 |---------|-------|----------|------------|
 | 1.18.2 | 40.3.12 | — | 0.14.24 |
 | 1.19.2 | 43.5.2 | — | 0.14.25 |
-| 1.20.4 | 49.2.9 | 20.4.0-beta | 0.15.10 |
+| 1.20.4 | 49.2.13 | 20.4.0-beta | 0.15.10 |
 | 1.21.1 | 52.1.20 | 21.1.45 | 0.16.14+1.21.1 |
 | 1.21.11 | 61.2.4 | 21.11.40-beta | 0.16.14+1.21.11 |
 | 26.3 | — | 26.3.0.76 | 0.155.2+26.3 |

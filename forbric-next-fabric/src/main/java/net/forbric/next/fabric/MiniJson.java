@@ -9,7 +9,7 @@ import java.util.Map;
  * 极简 JSON 解析器（forbric-next-fabric 内部专用）。
  *
  * <p>为什么要自己写：loader / fabric 模块刻意不引入第三方 JSON 库（Gson/Jackson），
- * 以保持 skeleton 阶段零外部依赖。fabric.mod.json / quilt.mod.json 的结构很规整，
+ * 以保持零外部依赖。fabric.mod.json / quilt.mod.json 的结构很规整，
  * 一个递归下降解析器足够把 id / version / entrypoints 读出来。
  *
  * <p>支持的输出类型：

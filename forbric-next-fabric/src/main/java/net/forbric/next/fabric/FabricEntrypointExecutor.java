@@ -19,9 +19,8 @@ import net.forbric.next.fabricapi.language.LanguageAdapterRegistry;
  *
  * <p>实例化走 {@link LanguageAdapterRegistry}（默认 Java adapter），支持
  * {@code com.example.Mod} / {@code Mod::FIELD} / {@code Mod::method} 三种形式。
- *
- * <p>骨架阶段只做"实例化"——真正 fabric-api 里 mod 会实现 {@code ModInitializer} 等接口，
- * 这里不做接口回调（那些接口等 fabric-api 补全）。实例化本身就会触发 mod 的静态初始化块。
+ * 实例化本身会触发 mod 的静态初始化块和构造器；接口回调（ModInitializer.onInitialize）
+ * 由 fabric-api 的事件桥处理。
  */
 public final class FabricEntrypointExecutor {
 

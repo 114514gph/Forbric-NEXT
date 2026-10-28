@@ -81,6 +81,13 @@ public final class ModArbiter {
 			chosenById.put(modId, chosen);
 			kept.add(chosen);
 
+			// 固定标记串 "CONFLICT:"——启动校验脚本 grep 这个串就能证明跨生态同名 mod 被识别。
+			NextLog.warn("CONFLICT: duplicate-mod mod id '{}' 同时出现在 {} 和 {}（{}）；仲裁结果=选用 {}",
+					modId,
+					group.get(0).jarPath().getFileName(),
+					group.get(1).jarPath().getFileName(),
+					group.stream().map(c -> c.ecosystem().name()).toList(),
+					chosen.ecosystem());
 			NextLog.warn("  仲裁: mod id '{}' 在 {} 个 jar 中出现，选用 {}（来自 {}）",
 					modId, group.size(), chosen.ecosystem(), chosen.jarPath().getFileName());
 			for (String r : rejected) {

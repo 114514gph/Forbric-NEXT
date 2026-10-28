@@ -102,6 +102,16 @@ public class DefaultBootOrchestrator implements BootOrchestrator {
 						e.getKey(), e.getValue());
 			}
 		}
+
+		// 跨生态仲裁：同一个 mod id 同时被 Fabric/Forge/NeoForge 发现（同名 jar）时，
+		// 由 ModArbiter 显式去重并打 CONFLICT 记录。之前 ModArbiter 写好了却从没被调用，
+		// 这次在真实无头启动里把它接上线。
+		if (context != null && !globalCatalog.isEmpty()) {
+			ModArbiter arbiter = new ModArbiter(context.modsDir());
+			java.util.List<ModCandidate> kept = arbiter.arbitrate(globalCatalog);
+			NextLog.info("BootOrchestrator: 跨生态仲裁完成，保留 {} / 丢弃 {} 个重复候选，冲突 {} 条",
+					kept.size(), globalCatalog.size() - kept.size(), arbiter.conflicts().size());
+		}
 	}
 
 	@Override
