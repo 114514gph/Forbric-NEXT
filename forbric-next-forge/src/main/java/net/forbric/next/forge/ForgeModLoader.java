@@ -35,6 +35,7 @@ import net.forbric.next.common.NextLog;
 public class ForgeModLoader implements ModLoader {
 
 	private final List<ModCandidate> discovered = new ArrayList<>();
+	private final ForgeModRuntime runtime = new ForgeModRuntime();
 
 	@Override
 	public Ecosystem ecosystem() {
@@ -76,13 +77,25 @@ public class ForgeModLoader implements ModLoader {
 	@Override
 	public void runPhase(LoadPhase phase) {
 		switch (phase) {
-			case CONSTRUCT -> NextLog.info("ForgeModLoader: constructing @Mod classes");
+			case CONSTRUCT -> {
+				NextLog.info("ForgeModLoader: constructing @Mod classes ({} mods)", discovered.size());
+				runtime.fireLifecyclePhase("construct");
+			}
 			case REGISTRY -> NextLog.info("ForgeModLoader: firing RegisterEvent");
-			case COMMON_SETUP -> NextLog.info("ForgeModLoader: FMLCommonSetupEvent");
-			case SIDED_SETUP -> NextLog.info("ForgeModLoader: FMLClientSetupEvent / FMLDedicatedServerSetupEvent");
+			case COMMON_SETUP -> {
+				NextLog.info("ForgeModLoader: FMLCommonSetupEvent");
+				runtime.fireLifecyclePhase("commonSetup");
+			}
+			case SIDED_SETUP -> {
+				NextLog.info("ForgeModLoader: FMLClientSetupEvent / FMLDedicatedServerSetupEvent");
+				runtime.fireLifecyclePhase("sidedSetup");
+			}
 			case IMC_ENQUEUE -> NextLog.info("ForgeModLoader: InterModEnqueueEvent");
 			case IMC_PROCESS -> NextLog.info("ForgeModLoader: InterModProcessEvent");
-			case LOAD_COMPLETE -> NextLog.info("ForgeModLoader: FMLLoadCompleteEvent");
+			case LOAD_COMPLETE -> {
+				NextLog.info("ForgeModLoader: FMLLoadCompleteEvent");
+				runtime.fireLifecyclePhase("loadComplete");
+			}
 			default -> { /* no-op */ }
 		}
 	}

@@ -67,7 +67,7 @@ public final class ModRemapPipeline {
 
 		Path out = Files.createTempDirectory("forbric-remap-" + sanitize(modJar.getFileName().toString()))
 				.resolve(modJar.getFileName().toString());
-		remapJar(modJar, out, mappings);
+		remapJar(modJar, out, mappings, targetMcVersion);
 		return out;
 	}
 
@@ -80,6 +80,15 @@ public final class ModRemapPipeline {
 	 * @throws IOException 读写失败
 	 */
 	public static void remapJar(Path modJar, Path outJar, RemapMappings mappings) throws IOException {
+		remapJar(modJar, outJar, mappings, null);
+	}
+
+	/**
+	 * 重映射 jar，同时可选改写 fabric.mod.json 的 minecraft 版本依赖。
+	 *
+	 * @param targetMcVersion 如果非 null，fabric.mod.json 里的 depends.minecraft 会被改成这个版本
+	 */
+	public static void remapJar(Path modJar, Path outJar, RemapMappings mappings, String targetMcVersion) throws IOException {
 		Files.createDirectories(outJar.getParent());
 		try (ZipInputStream zin = new ZipInputStream(Files.newInputStream(modJar));
 				ZipOutputStream zout = new ZipOutputStream(Files.newOutputStream(outJar))) {
@@ -90,12 +99,35 @@ public final class ModRemapPipeline {
 				zout.putNextEntry(newEntry);
 				if (entry.getName().endsWith(".class")) {
 					zout.write(RuntimeRemapper.remap(data, mappings));
+				} else if (entry.getName().equals("fabric.mod.json") && targetMcVersion != null) {
+					// 改写 minecraft 版本依赖，绕过 Fabric Loader 的版本硬校验
+					String json = new String(data, StandardCharsets.UTF_8);
+					json = rewriteMinecraftDep(json, targetMcVersion);
+					zout.write(json.getBytes(StandardCharsets.UTF_8));
 				} else {
 					zout.write(data);
 				}
 				zout.closeEntry();
 			}
 		}
+	}
+
+	/**
+	 * 把 fabric.mod.json 里 depends.minecraft 改成目标版本，绕过 KnotLoader 的版本硬校验。
+	 * 这是跨版本兼容层的核心：不拒绝老 mod，而是改写它的版本声明让它"看起来兼容"。
+	 */
+	static String rewriteMinecraftDep(String json, String targetVersion) {
+		// "minecraft": "~1.20.4" → "minecraft": ">=26.3"
+		// "minecraft": ">=1.21.1" → "minecraft": ">=26.3"
+		// "minecraft": "1.21.x" → "minecraft": ">=26.3"
+		String result = json.replaceAll(
+				"\"minecraft\"\\s*:\\s*\"[^\"]*\"",
+				"\"minecraft\": \">=" + targetVersion + "\"");
+		// 数组形式: "minecraft": [">=1.21.1"]
+		result = result.replaceAll(
+				"\"minecraft\"\\s*:\\s*\\[[^\\]]*\\]",
+				"\"minecraft\": \">=" + targetVersion + "\"");
+		return result;
 	}
 
 	/**
