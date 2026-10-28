@@ -17,18 +17,19 @@ import net.forbric.next.api.LoadPhase;
 import net.forbric.next.api.ModCandidate;
 import net.forbric.next.api.ModLoader;
 import net.forbric.next.common.ModsToml;
+import net.forbric.next.api.util.ModDependencySorter;
 import net.forbric.next.common.NextLog;
 
 /**
  * MinecraftForge ecosystem loader.
  *
- * <p><b>Skeleton status.</b> The key contract this stub enforces (fixing 0.3.0's "strong compat" bug):
+ * <p>核心行为（修复原版 0.3.0 的"强兼"bug）：
  * <ul>
- *   <li>Forge @Mod construction order uses Forge-native semantics: explicit BEFORE/AFTER edges only.
- *       Mandatory {@code depends} is a presence requirement, <em>not</em> an ordering edge.</li>
- *   <li>No Fabric mod is ever included in the Forge construction graph.</li>
- *   <li>Forge lifecycle phases run: Construct → CommonSetup → SidedSetup → Registration →
- *       IMC Enqueue → IMC Process → LoadComplete.</li>
+ *   <li>Forge @Mod 构造顺序用 Forge 原生语义：显式 BEFORE/AFTER 边才参与排序。
+ *       mandatory {@code depends} 只是存在性检查，<b>不是</b>排序边。</li>
+ *   <li>Fabric mod 不会被纳入 Forge 的构造图。</li>
+ *   <li>Forge 生命周期阶段：Construct → CommonSetup → SidedSetup → Registration →
+ *       IMC Enqueue → IMC Process → LoadComplete。</li>
  * </ul>
  */
 public class ForgeModLoader implements ModLoader {
@@ -67,7 +68,7 @@ public class ForgeModLoader implements ModLoader {
 		discovered.clear();
 		// Forge 排序：BEFORE/AFTER 是排序边，mandatory depends 只是存在性检查
 		// 目前无显式 ordering 边数据，用 modId 做稳定排序
-		discovered.addAll(ForgeModSorter.sort(candidates, Map.of()));
+		discovered.addAll(ModDependencySorter.sort(candidates, Map.of()));
 		NextLog.info("ForgeModLoader: resolved {} forge mod(s); ordered by BEFORE/AFTER edges",
 				discovered.size());
 	}

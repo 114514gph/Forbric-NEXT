@@ -1,4 +1,4 @@
-package net.forbric.next.forge;
+package net.forbric.next.api.util;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,9 +23,9 @@ import net.forbric.next.common.NextLog;
  *   <li>排序用 Kahn 算法做拓扑排序；有环时打破环并打 WARN。</li>
  * </ul>
  */
-public final class ForgeModSorter {
+public final class ModDependencySorter {
 
-	private ForgeModSorter() {}
+	private ModDependencySorter() {}
 
 	/**
 	 * 对 Forge mod 列表做拓扑排序。
@@ -88,7 +88,7 @@ public final class ForgeModSorter {
 					sorted.add(byId.get(id));
 				}
 			}
-			NextLog.warn("ForgeModSorter: 检测到排序环，剩余 mod 按字母序排列: {}", cyclic);
+			NextLog.warn("ModDependencySorter: 检测到排序环，剩余 mod 按字母序排列: {}", cyclic);
 		}
 
 		// 无排序边时保持原顺序（稳定）

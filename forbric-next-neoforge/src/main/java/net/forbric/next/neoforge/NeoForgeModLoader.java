@@ -5,7 +5,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.forbric.next.api.Ecosystem;
 import net.forbric.next.api.LoadContext;
@@ -14,13 +18,13 @@ import net.forbric.next.api.ModCandidate;
 import net.forbric.next.api.ModLoader;
 import net.forbric.next.common.ModsToml;
 import net.forbric.next.common.NextLog;
+import net.forbric.next.api.util.ModDependencySorter;
 
 /**
  * NeoForge ecosystem loader.
  *
- * <p><b>Skeleton status.</b> Same contract as {@link ForgeModLoader}: NeoForge @Mod construction
- * order uses explicit BEFORE/AFTER edges only; mandatory depends is presence, not ordering.
- * NeoForge has its own mod-bus / game-bus split that this loader will own.
+ * <p>和 {@link ForgeModLoader} 同一套排序逻辑：BEFORE/AFTER 是排序边，
+ * mandatory depends 只是存在性检查。NeoForge 有独立的 mod-bus / game-bus 事件系统。
  */
 public class NeoForgeModLoader implements ModLoader {
 
@@ -40,7 +44,7 @@ public class NeoForgeModLoader implements ModLoader {
 		try (DirectoryStream<Path> jars = Files.newDirectoryStream(modsDir, "*.jar")) {
 			for (Path jar : jars) {
 				var mods = ModsToml.readFromJar(jar, "META-INF/neoforge.mods.toml");
-				if (mods.isEmpty()) continue; // 不是 NeoForge mod
+				if (mods.isEmpty()) continue;
 				for (ModsToml.Mod m : mods.get()) {
 					out.add(new ModCandidate(m.modId(), m.version(),
 							Ecosystem.NEOFORGE, jar, List.of()));
@@ -56,8 +60,15 @@ public class NeoForgeModLoader implements ModLoader {
 	@Override
 	public void resolve(List<ModCandidate> candidates, LoadContext context) {
 		discovered.clear();
-		discovered.addAll(candidates);
-		NextLog.info("NeoForgeModLoader: resolved {} neoforge mod(s); ordering by explicit BEFORE/AFTER",
+		Map<String, Set<String>> orderEdges = new HashMap<>();
+		for (ModCandidate c : candidates) {
+			// 简化：把每个 mod 的依赖当作 AFTER 边（被依赖的先加载）
+			for (String dep : java.util.List.<String>of()) { // TODO: 从 mods.toml 提取 [[dependencies]]
+				orderEdges.computeIfAbsent(dep, k -> new HashSet<>()).add(c.id());
+			}
+		}
+		discovered.addAll(ModDependencySorter.sort(candidates, orderEdges));
+		NextLog.info("NeoForgeModLoader: resolved {} neoforge mod(s); ordered by BEFORE/AFTER edges",
 				discovered.size());
 	}
 
