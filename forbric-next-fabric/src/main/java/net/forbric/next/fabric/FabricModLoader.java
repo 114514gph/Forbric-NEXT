@@ -101,24 +101,35 @@ public class FabricModLoader implements ModLoader {
 	 * <p>骨架阶段：fabric.mod.json 里 {@code depends.minecraft} 是 {@code ~1.20.4} 这种，
 	 * 管道会自己抠版本号并打 "Remapping mod X from MC 1.20.4 to 26.3" 日志。
 	 */
+	/**
+	 * 跨版本兼容：mod 声明的 MC 版本和当前运行版本不一致时，不拒绝加载。
+	 *
+	 * <p>策略：
+	 * <ol>
+	 *   <li>版本一致 → 原样加载。</li>
+	 *   <li>版本不一致 → 打 WARN 说明"跨版本兼容模式"，尝试走重映射管道。</li>
+	 *   <li>重映射失败 → 回退原 jar 继续加载（mod 可能在某些类上崩，但不挡发现流程）。</li>
+	 * </ol>
+	 *
+	 * <p>不会因为版本号不匹配就把 mod 拒掉——这是 Forbric-NEXT 作为兼容层的核心行为。
+	 */
 	private DiscoveredFabricMod remapIfVersionMismatch(DiscoveredFabricMod m, String currentMcVersion) {
 		String mcRange = m.depends() == null ? null : m.depends().get("minecraft");
 		if (mcRange == null) {
-			// 没声明 MC 依赖，骨架阶段假设兼容，不重映射
 			return m;
 		}
 		if (!ModRemapPipeline.needsRemap(m.jarPath(), currentMcVersion)) {
 			return m;
 		}
+		// 版本不匹配：明确告诉用户这是跨版本兼容模式，不拒绝
+		NextLog.warn("FabricModLoader: mod {} 声明 MC {}，当前运行 {} —— 跨版本兼容模式，尝试重映射",
+				m.id(), mcRange, currentMcVersion);
 		try {
-			NextLog.info("Remapping mod {} from MC {} to {}",
-					m.id(), mcRange, currentMcVersion);
 			Path remappedJar = ModRemapPipeline.remapModJar(m.jarPath(), currentMcVersion);
 			return new DiscoveredFabricMod(m.id(), m.version(), m.name(), m.ecosystem(),
 					remappedJar, m.entrypoints(), m.depends(), m.mixinConfigs(), m.parentJar());
 		} catch (IOException e) {
-			// 重映射失败：不要因为一个老 mod 炸掉整个启动，回退到原 jar 并打 WARN
-			NextLog.warn("FabricModLoader: mod {} 重映射失败，回退用原 jar: {}", m.id(), e.getMessage());
+			NextLog.warn("FabricModLoader: mod {} 重映射失败，回退原 jar 继续加载: {}", m.id(), e.getMessage());
 			return m;
 		}
 	}

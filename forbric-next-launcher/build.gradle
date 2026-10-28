@@ -10,4 +10,6 @@ dependencies {
     implementation project(':forbric-next-forge')
     implementation project(':forbric-next-neoforge')
     implementation project(':forbric-next-common')
+    // HeadlessPreflight 需要调 ModRemapPipeline
+    implementation project(':forbric-next-remapper')
 }
