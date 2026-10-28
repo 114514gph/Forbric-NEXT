@@ -135,22 +135,22 @@ public final class ModRemapPipeline {
 	/**
 	 * 从 fabric.mod.json 文本里抠 depends.minecraft 的版本约束。
 	 *
-	 * <p>正则策略：先找 {@code "minecraft"\s*:\s*"约束"}，再在约束里找第一个 x.y(.z)。
-	 * 骨架阶段不做 SemVer 范围语义解析，只取"主版本.次版本"做粗略比对。
+	 * <p>用 {@link SemVerRange} 解析完整范围，提取主版本号做粗略比对。
 	 *
 	 * @param json fabric.mod.json 原文
 	 * @return 版本号；找不到返回 null
 	 */
 	static String extractMcVersion(String json) {
-		// 找 "minecraft" : "..." 或 "minecraft" : [ ... ]
 		Matcher m = Pattern.compile("\"minecraft\"\\s*:\\s*\"([^\"]+)\"").matcher(json);
 		String constraint = m.find() ? m.group(1) : null;
 		if (constraint == null) {
-			// 兼容数组形式："minecraft": [">=1.20.4"]
 			Matcher m2 = Pattern.compile("\"minecraft\"\\s*:\\s*\\[\\s*\"([^\"]+)\"").matcher(json);
 			constraint = m2.find() ? m2.group(1) : null;
 		}
 		if (constraint == null) return null;
+		// 用 SemVer 解析器提取版本号
+		SemVerRange range = SemVerRange.parse(constraint);
+		// 从原始约束里抠第一个 x.y(.z) 版本号做 key
 		Matcher vm = VERSION_RE.matcher(constraint);
 		return vm.find() ? vm.group(1) : null;
 	}

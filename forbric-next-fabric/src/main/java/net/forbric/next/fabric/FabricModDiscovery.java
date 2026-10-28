@@ -111,7 +111,8 @@ public final class FabricModDiscovery {
 					out.add(mod);
 					NextLog.info("  发现 {} mod: {} {} ({})",
 							meta.ecosystem(), meta.id(), meta.version(), jar.getFileName());
-					// 声明式 mixin config 先读出来打日志；真正接 mixin 留 TODO。
+					// mixin config 已读入 DiscoveredFabricMod；实际注册由 boot 阶段的
+					// ForbricMixinService.registerConfig() 完成。
 					if (!mod.mixinConfigs().isEmpty()) {
 						NextLog.info("  mixin configs: {}", mod.mixinConfigs());
 					}

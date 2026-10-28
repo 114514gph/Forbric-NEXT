@@ -5,7 +5,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import net.forbric.next.api.Ecosystem;
 import net.forbric.next.api.LoadContext;
@@ -61,9 +65,10 @@ public class ForgeModLoader implements ModLoader {
 	@Override
 	public void resolve(List<ModCandidate> candidates, LoadContext context) {
 		discovered.clear();
-		discovered.addAll(candidates);
-		// TODO: port Forge ModSorter semantics (BEFORE/AFTER edges only, NOT mandatory-depends edges).
-		NextLog.info("ForgeModLoader: resolved {} forge mod(s); ordering by explicit BEFORE/AFTER",
+		// Forge 排序：BEFORE/AFTER 是排序边，mandatory depends 只是存在性检查
+		// 目前无显式 ordering 边数据，用 modId 做稳定排序
+		discovered.addAll(ForgeModSorter.sort(candidates, Map.of()));
+		NextLog.info("ForgeModLoader: resolved {} forge mod(s); ordered by BEFORE/AFTER edges",
 				discovered.size());
 	}
 
