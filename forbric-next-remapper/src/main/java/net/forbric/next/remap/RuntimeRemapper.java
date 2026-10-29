@@ -156,6 +156,53 @@ public final class RuntimeRemapper {
 			}
 		}
 
+		// ---- 第三步：重写字段表/方法表里的名字 ----
+		// 解析字段表和方法表，收集字段/方法名的 Utf8 索引
+		// 如果名字匹配全局映射，加入 utf8Overrides 重写
+		pos = cpEnd;
+		pos += 2; // access_flags
+		pos += 2; // this_class
+		pos += 2; // super_class
+		int interfacesCount = readU2(in, pos); pos += 2 + interfacesCount * 2;
+
+		// fields
+		int fieldsCount = readU2(in, pos); pos += 2;
+		for (int f = 0; f < fieldsCount; f++) {
+			pos += 2; // access_flags
+			int nameIdx = readU2(in, pos); pos += 2;
+			pos += 2; // descriptor_index
+			int attrCount = readU2(in, pos); pos += 2;
+			for (int a = 0; a < attrCount; a++) {
+				pos += 2; // attr name index
+				int attrLen = readU4(in, pos); pos += 2 + attrLen;
+			}
+			// Check if this field name needs remapping (global fallback)
+			String fieldName = utf8Strings[nameIdx];
+			String mapped = mappings.mapField(fieldName);
+			if (!mapped.equals(fieldName)) {
+				utf8Overrides.put(nameIdx, mapped);
+			}
+		}
+
+		// methods
+		int methodsCount = readU2(in, pos); pos += 2;
+		for (int m = 0; m < methodsCount; m++) {
+			pos += 2; // access_flags
+			int nameIdx = readU2(in, pos); pos += 2;
+			pos += 2; // descriptor_index
+			int attrCount = readU2(in, pos); pos += 2;
+			for (int a = 0; a < attrCount; a++) {
+				pos += 2; // attr name index
+				int attrLen = readU4(in, pos); pos += 2 + attrLen;
+			}
+			// Check if this method name needs remapping (global fallback)
+			String methodName = utf8Strings[nameIdx];
+			String mapped = mappings.mapMethod(methodName);
+			if (!mapped.equals(methodName)) {
+				utf8Overrides.put(nameIdx, mapped);
+			}
+		}
+
 		// ---- 重序列化常量池 ----
 		ByteArrayOutputStream out = new ByteArrayOutputStream(in.length + 64);
 		out.writeBytes(java.util.Arrays.copyOfRange(in, 0, 8));
@@ -173,6 +220,7 @@ public final class RuntimeRemapper {
 			}
 		}
 
+		// Copy the rest unchanged
 		out.writeBytes(java.util.Arrays.copyOfRange(in, cpEnd, in.length));
 		return out.toByteArray();
 	}

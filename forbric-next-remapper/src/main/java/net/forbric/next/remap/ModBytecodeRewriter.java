@@ -75,8 +75,10 @@ public class ModBytecodeRewriter {
                     String oldName = remainder.substring(dotIdx + 1);
                     if (prefix.equals("field.")) {
                         m.addOwnerFieldMapping(owner, oldName, value);
+                        m.addFieldMapping(oldName, value);
                     } else if (prefix.equals("method.")) {
                         m.addOwnerMethodMapping(owner, oldName, value);
+                        m.addMethodMapping(oldName, value);
                     }
                 }
             }
