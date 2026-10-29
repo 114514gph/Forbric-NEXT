@@ -25,9 +25,8 @@ import net.forbric.next.common.NextLog;
  * <ul>
  *   <li>映射表从 classpath 资源 {@code /remap-mappings/{source}-{target}.properties} 加载；
  *       资源不存在时用空映射表跑管道（管道照走，只是不改任何类名）——这样测试和集成能立刻跑通。</li>
- *   <li>fabric.mod.json 里 {@code depends.minecraft} 用正则抠版本号（{@code ~1.20.4}、
- *       {@code >=1.20.4}、{@code 1.20.x} 都能抠出 {@code 1.20.4} / {@code 1.20}）。
- *       TODO: 接 Fabric 原生 SemVer 范围解析器。</li>
+ *   <li>fabric.mod.json 里 {@code depends.minecraft} 用 {@link SemVerRange} 解析版本范围，
+ *       同时重写 fabric.mod.json 的版本声明绕过 Fabric Loader 硬校验。</li>
  *   <li>非 {@code .class} 条目（fabric.mod.json、mixins、资源）原样拷贝。</li>
  * </ul>
  */
