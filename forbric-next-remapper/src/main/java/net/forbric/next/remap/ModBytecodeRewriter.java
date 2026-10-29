@@ -44,23 +44,43 @@ public class ModBytecodeRewriter {
 
     private static RemapMappings loadMappings(String source, String target) throws IOException {
         RemapMappings m = new RemapMappings();
-        String resource = "/remap-mappings/" + source + "-" + target + ".properties";
+        
+        // Load class mappings
+        loadProps("/remap-mappings/" + source + "-" + target + ".properties", m, "class.");
+        // Load field mappings
+        loadProps("/remap-mappings/" + source + "-" + target + "-fields.properties", m, "field.");
+        // Load method mappings
+        loadProps("/remap-mappings/" + source + "-" + target + "-methods.properties", m, "method.");
+        
+        return m;
+    }
+
+    private static void loadProps(String resource, RemapMappings m, String prefix) throws IOException {
         try (InputStream in = ModBytecodeRewriter.class.getResourceAsStream(resource)) {
-            if (in == null) {
-                System.err.println("Mapping resource not found: " + resource);
-                return m;
-            }
+            if (in == null) return;
             Properties props = new Properties();
             props.load(in);
             for (String key : props.stringPropertyNames()) {
-                if (key.startsWith("class.")) {
-                    String oldName = key.substring("class.".length());
-                    String newName = props.getProperty(key);
-                    m.addClassMapping(oldName, newName);
+                if (!key.startsWith(prefix)) continue;
+                String value = props.getProperty(key);
+                String remainder = key.substring(prefix.length());
+                if (prefix.equals("class.")) {
+                    // Format: class.{oldName}={newName}
+                    m.addClassMapping(remainder, value);
+                } else {
+                    // Format: {field|method}.{owner}.{oldName}={newName}
+                    int dotIdx = remainder.lastIndexOf('.');
+                    if (dotIdx < 0) continue;
+                    String owner = remainder.substring(0, dotIdx);
+                    String oldName = remainder.substring(dotIdx + 1);
+                    if (prefix.equals("field.")) {
+                        m.addOwnerFieldMapping(owner, oldName, value);
+                    } else if (prefix.equals("method.")) {
+                        m.addOwnerMethodMapping(owner, oldName, value);
+                    }
                 }
             }
         }
-        return m;
     }
 
     private static int rewriteJar(Path jarPath, RemapMappings mappings) throws IOException {
