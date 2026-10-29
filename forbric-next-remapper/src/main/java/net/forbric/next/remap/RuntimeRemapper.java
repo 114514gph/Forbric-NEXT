@@ -125,6 +125,24 @@ public final class RuntimeRemapper {
 			}
 		}
 
+		// ---- 第一步半：全局字段/方法名 Utf8 重写 ----
+		// 扫描所有 Utf8 条目，凡是精确匹配老字段/方法名的就重写。
+		// 这样 mixin @Shadow 字段名、字段表里的字段名都会被重写。
+		// 风险极低：field_xxxx / method_xxxx 这种命名不会作为普通字符串出现。
+		java.util.Set<String> knownFields = mappings.fieldMappings().keySet();
+		java.util.Set<String> knownMethods = mappings.methodMappings().keySet();
+		for (int i = 1; i < cpCount; i++) {
+			if (utf8Overrides.containsKey(i)) continue; // 已经被类名重写了
+			String s = utf8Strings[i];
+			if (s == null) continue;
+			// 精确匹配字段名或方法名
+			if (knownFields.contains(s)) {
+				utf8Overrides.put(i, mappings.mapField(s));
+			} else if (knownMethods.contains(s)) {
+				utf8Overrides.put(i, mappings.mapMethod(s));
+			}
+		}
+
 		// ---- 第二步：字段/方法名重写（带 owner 作用域） ----
 		// 收集 owner 类名映射后的结果，用于 owner 作用域查询
 		for (int i = 1; i < cpCount; i++) {

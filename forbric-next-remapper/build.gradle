@@ -4,4 +4,5 @@ description = 'Cross-version legacy mod runtime bytecode remapping layer (consta
 dependencies {
     api project(':forbric-next-loader-api')
     implementation project(':forbric-next-common')
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
