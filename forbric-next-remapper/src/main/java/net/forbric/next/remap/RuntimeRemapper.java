@@ -61,7 +61,10 @@ public final class RuntimeRemapper {
 		try {
 			return remapInternal(classBytes, mappings);
 		} catch (RuntimeException e) {
-			NextLog.warn("RuntimeRemapper: class 常量池解析失败，跳过重写（{}）", e.getMessage());
+			NextLog.error("RuntimeRemapper: class 常量池解析失败，跳过重写。"
+					+ " size={} bytes, exception={}: {}", classBytes.length, e.getClass().getName(), e.getMessage());
+			// 打印完整堆栈到 stderr，方便定位哪个 class 文件、哪一行解析失败
+			e.printStackTrace();
 			return classBytes;
 		}
 	}
@@ -94,7 +97,14 @@ public final class RuntimeRemapper {
 					pos += len;
 					utf8Strings[i] = new String(raw, StandardCharsets.UTF_8);
 				}
-				case TAG_LONG, TAG_DOUBLE -> { pos += 8; i++; tags[i] = -1; }
+				case TAG_LONG, TAG_DOUBLE -> {
+					pos += 8;
+					payloadEnd[i] = pos; // 先设当前条目的 end
+					i++; // 跳过第二个槽位
+					tags[i] = -1;
+					payloadStart[i] = pos;
+					payloadEnd[i] = pos;
+				}
 				case TAG_INTEGER, TAG_FLOAT -> pos += 4;
 				case TAG_CLASS, TAG_STRING, TAG_METHOD_TYPE, TAG_MODULE, TAG_PACKAGE -> {
 					refData[i] = new int[]{ readU2(in, pos) };
