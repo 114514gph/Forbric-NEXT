@@ -129,8 +129,11 @@ public class ModBytecodeRewriter {
         try {
             String text = new String(jsonData, java.nio.charset.StandardCharsets.UTF_8);
             // 已知有结构问题的 mixin 类名关键词
+            // 这些是修不了的（映射数据缺失或类结构根本变了），过滤掉并记录到 load-report
             String[] problematic = {
-                "Explosion",  // net.minecraft.world.level.Explosion: class → interface in 26.3
+                "Explosion",        // net.minecraft.world.level.Explosion: class → interface in 26.3
+                "SystemReport",     // @Shadow method_37123 找不到对应项，映射数据缺失
+                "MixinMinecraftClient", // @Shadow field player 类型不匹配（Player vs LocalPlayer）
             };
             boolean modified = false;
             for (String p : problematic) {

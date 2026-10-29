@@ -207,17 +207,25 @@ public final class RuntimeRemapper {
 
 	private static String applyClassMappings(String s, Map<String, String> classMap) {
 		String result = s;
-		for (Map.Entry<String, String> e : classMap.entrySet()) {
-			String oldInternal = e.getKey();
-			String newInternal = e.getValue();
-			if (oldInternal.equals(result)) {
-				result = newInternal;
-			} else {
-				String needle = "L" + oldInternal + ";";
-				if (result.contains(needle)) {
-					result = result.replace(needle, "L" + newInternal + ";");
+		// 多 pass 直到没有更多变化，确保映射链完整解析
+		// 例如：class_1927 → Explosion → ServerExplosion 需要两次 pass
+		for (int pass = 0; pass < 3; pass++) {
+			boolean changed = false;
+			for (Map.Entry<String, String> e : classMap.entrySet()) {
+				String oldInternal = e.getKey();
+				String newInternal = e.getValue();
+				if (oldInternal.equals(result)) {
+					result = newInternal;
+					changed = true;
+				} else {
+					String needle = "L" + oldInternal + ";";
+					if (result.contains(needle)) {
+						result = result.replace(needle, "L" + newInternal + ";");
+						changed = true;
+					}
 				}
 			}
+			if (!changed) break;
 		}
 		return result;
 	}
