@@ -69,15 +69,23 @@ public class ModBytecodeRewriter {
                     m.addClassMapping(remainder, value);
                 } else {
                     // Format: {field|method}.{owner}.{oldName}={newName}
+                    // Or: {field|method}.{oldName}={newName} (global, no owner)
                     int dotIdx = remainder.lastIndexOf('.');
-                    if (dotIdx < 0) continue;
-                    String owner = remainder.substring(0, dotIdx);
-                    String oldName = remainder.substring(dotIdx + 1);
+                    String owner;
+                    String oldName;
+                    if (dotIdx < 0) {
+                        // Global mapping, no owner
+                        owner = null;
+                        oldName = remainder;
+                    } else {
+                        owner = remainder.substring(0, dotIdx);
+                        oldName = remainder.substring(dotIdx + 1);
+                    }
                     if (prefix.equals("field.")) {
-                        m.addOwnerFieldMapping(owner, oldName, value);
+                        if (owner != null) m.addOwnerFieldMapping(owner, oldName, value);
                         m.addFieldMapping(oldName, value);
                     } else if (prefix.equals("method.")) {
-                        m.addOwnerMethodMapping(owner, oldName, value);
+                        if (owner != null) m.addOwnerMethodMapping(owner, oldName, value);
                         m.addMethodMapping(oldName, value);
                     }
                 }
@@ -134,6 +142,7 @@ public class ModBytecodeRewriter {
                 "Explosion",        // net.minecraft.world.level.Explosion: class → interface in 26.3
                 "SystemReport",     // @Shadow method_37123 找不到对应项，映射数据缺失
                 "MixinMinecraftClient", // @Shadow field player 类型不匹配（Player vs LocalPlayer）
+                "MinecraftMixin",   // @Inject disconnect(Screen)V 方法签名变了（变成 disconnect(Screen, boolean)）
             };
             boolean modified = false;
             for (String p : problematic) {
