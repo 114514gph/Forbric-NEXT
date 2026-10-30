@@ -149,7 +149,10 @@ public class ModBytecodeRewriter {
                 "ScreenMixin",      // init(MinecraftClient,II) 签名变了
                 "ScreenAccessor",   // textRenderer 字段没了
                 "Player_",          // Player 类多个方法被移除/改名
-                "LivingEntity_",    // carpet 所有 LivingEntity mixin 都引用 GameRules$Key（已重构）
+                "LivingEntity_",    // carpet LivingEntity mixin 引用 GameRules$Key
+                "EntityMixin",      // isControlledByLocalInstance 找不到
+                "antiCheatMixin",   // canInteractWithBlock 方法找不到
+                "tickMixin",        // neighborUpdater 字段找不到
             };
             boolean modified = false;
             for (String p : problematic) {
