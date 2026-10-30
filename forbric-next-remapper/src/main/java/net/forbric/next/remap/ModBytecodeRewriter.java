@@ -141,10 +141,11 @@ public class ModBytecodeRewriter {
             String[] problematic = {
                 "Explosion",        // net.minecraft.world.level.Explosion: class → interface in 26.3
                 "SystemReport",     // @Shadow method_37123 找不到对应项，映射数据缺失
-                "SystemDetailsMixin", // setDetail 方法在 26.3 SystemReport 里找不到
+                "SystemDetailsMixin", // setDetail 方法签名不匹配
                 "MixinMinecraftClient", // @Shadow field player 类型不匹配（Player vs LocalPlayer）
-                "MinecraftMixin",   // @Inject disconnect(Screen)V 方法签名变了（变成 disconnect(Screen, boolean)）
-                "Player_",          // Player 类多个方法在 26.3 被移除/改名（parrot/antiCheat 等）
+                "MinecraftMixin",   // @Inject disconnect(Screen)V 方法签名变了
+                "MinecraftClientMixin", // addCustomNbtData 方法在 26.3 Minecraft 里找不到
+                "Player_",          // Player 类多个方法在 26.3 被移除/改名
             };
             boolean modified = false;
             for (String p : problematic) {
