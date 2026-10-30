@@ -139,13 +139,16 @@ public class ModBytecodeRewriter {
             // 已知有结构问题的 mixin 类名关键词
             // 这些是修不了的（映射数据缺失或类结构根本变了），过滤掉并记录到 load-report
             String[] problematic = {
-                "Explosion",        // net.minecraft.world.level.Explosion: class → interface in 26.3
-                "SystemReport",     // @Shadow method_37123 找不到对应项，映射数据缺失
-                "SystemDetailsMixin", // setDetail 方法签名不匹配
-                "MixinMinecraftClient", // @Shadow field player 类型不匹配（Player vs LocalPlayer）
-                "MinecraftMixin",   // @Inject disconnect(Screen)V 方法签名变了
-                "MinecraftClientMixin", // addCustomNbtData 方法在 26.3 Minecraft 里找不到
-                "Player_",          // Player 类多个方法在 26.3 被移除/改名
+                "Explosion",        // class → interface 重构
+                "SystemReport",     // 方法签名变了
+                "SystemDetailsMixin", // setDetail 签名不匹配
+                "MixinMinecraftClient", // player 字段类型不匹配
+                "MinecraftMixin",   // disconnect 方法签名变了
+                "MinecraftClientMixin", // addCustomNbtData 方法没了
+                "MinecraftClientAccessor", // integratedServerConnection 字段没了
+                "ScreenMixin",      // init(MinecraftClient,II) 签名变了
+                "ScreenAccessor",   // textRenderer 字段没了
+                "Player_",          // Player 类多个方法被移除/改名
             };
             boolean modified = false;
             for (String p : problematic) {
