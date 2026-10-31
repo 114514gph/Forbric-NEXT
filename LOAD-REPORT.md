@@ -1,33 +1,59 @@
 # NeoForbric Load Report
 
 MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
-更新时间：2026-10-31
+更新时间：2026-10-31 (Beta 桥接集成版)
 
 ## 加载器进度总览
 
 | 加载器 | 代码 | 真实 mod 测试 | 说明 |
 |--------|------|--------------|------|
 | Fabric | ✅ 完整 | ✅ 5 mod 到主菜单 | Carpet/MaLiLib/MiniHUD/Litematica/Tweakeroo |
-| Forge | ✅ 完整 | ✅ 主菜单不崩溃 | Farmer's Delight 被识别为非 Fabric mod，自动跳过，游戏正常到主菜单 |
-| NeoForge | ✅ 完整 | ⏳ 待 mod | 基于 Forge，用 neoforge.mods.toml |
-| Quilt | ✅ 完整 | ⏳ 待 mod | 基于 Fabric，用 quilt.mod.json |
+| Forge | ✅ 桥接集成 | ✅ 10/14 类加载到主菜单 | Farmer's Delight 真正运行时加载，常量池重映射 |
+| NeoForge | ✅ 完整 | ⏳ mod 已下载待测 | Friends&Foes NeoForge 5.0.4 (366 classes) |
+| Quilt | ✅ 完整 | ⏳ mod 已下载待测 | Friends&Foes Quilt/Fabric 5.0.4 |
 
 ---
 
-## 🔧 Forge 运行时验证
+## 🔧 Forge 桥接集成（重大进展）
 
-| Mod | 版本 | 状态 | 备注 |
-|-----|------|------|------|
-| Farmer's Delight | 1.20.1-1.3.4 | ✅ 主菜单不崩溃 | 289 classes, 14 @Mod, 72 Block, 27 Item |
-| Create | 1.20.1-6.0.8 | ⏳ 下载完成待验证 | 23MB, 12338 entries |
+### NeoForbric Bridge
+- **机制**：作为 Fabric mod 打包 (neoforbric-bridge.jar)，提供 preLaunch + main 入口点
+- **preLaunch 阶段**：扫描 mods 目录，发现 Forge mod，运行 ForgeModRuntime 7 阶段生命周期
+- **main 阶段**：初始化 Forge 事件总线
 
-**验证结果：**
-- ✅ mods.toml 元数据解析成功
-- ✅ @Mod 注解扫描成功（14 个类）
-- ✅ @EventBusSubscriber 检测成功（13 个类）
-- ✅ Block/Item/Entity 注册类统计（72/27/27）
-- ✅ **真实客户端测试：Forge mod 放入 mods/ 目录，Fabric Loader 识别为非 Fabric mod 并自动跳过，游戏正常跑到主菜单**
-- 📸 截图：`screenshot-forge-test.png`
+### 字节码重映射（真正修复，非 catch 跳过）
+- **RuntimeRemapper**：正确解析 class 文件常量池，重写类名引用
+- **映射表**：`forge-named-1.20.1-26.3.properties`（21 条实体类子包重定位）
+- **重定位示例**：
+  - `net/minecraft/world/entity/animal/Rabbit` → `net/minecraft/world/entity/animal/rabbit/Rabbit`
+  - Chicken/Cow/Pig/Sheep/Fox/Frog/Goat 等 15 个实体类全部移到子包
+
+### Farmer's Delight 加载结果
+| 指标 | 数值 |
+|------|------|
+| 总 @Mod 类 | 14 |
+| 成功实例化 | 10 (71%) |
+| ClassFormatError | 0（重映射正确） |
+| 游戏到主菜单 | ✅ Welcome to Minecraft! |
+
+### 剩余 4 个失败（真正 API 差异）
+1. `IIngredientSerializer` — Forge 专属类，MC 不存在
+2. `IConfigSpec` — Forge 配置类，MC 不存在
+3. `Enchantment` 变成 final — 26.3 API 变更，不能被继承
+4. `DiggerItem` 被删除 — 工具改成数据驱动 Tool 组件
+
+---
+
+## 📦 已下载 Mod 清单
+
+| Mod | 加载器 | 版本 | 大小 | 状态 |
+|-----|--------|------|------|------|
+| Farmer's Delight | Forge | 1.20.1-1.3.4 | 3.2MB | ✅ 10/14 类加载 |
+| Friends&Foes | NeoForge | 5.0.4+mc1.21.1 | 5.1MB | ⏳ 待端到端测试 |
+| Friends&Foes | Quilt/Fabric | 5.0.4+mc1.21.1 | 5.1MB | ⏳ 待端到端测试 |
+| Create | Forge | 1.20.1-6.0.8 | 23MB | ⚠️ jar 损坏，需重下 |
+
+📸 截图：`screenshot-forge-remap2.png`（Welcome to Minecraft! 主菜单）
 
 ---
 
