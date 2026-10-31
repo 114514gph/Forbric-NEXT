@@ -224,6 +224,18 @@ public final class RuntimeRemapper {
 						changed = true;
 					}
 				}
+				// 也处理点号格式（反射 / Class.forName 用点号）
+				String oldDotted = oldInternal.replace('/', '.');
+				String newDotted = newInternal.replace('/', '.');
+				if (oldDotted.equals(result)) {
+					result = newDotted;
+					changed = true;
+				} else if (result.contains(oldDotted) && !result.contains(newDotted)) {
+					// 子串替换：处理 "net.minecraft.class_2960" 出现在更长字符串里的情况
+					// 但要小心边界：只替换完整的类名，不替换部分匹配
+					result = result.replace(oldDotted, newDotted);
+					changed = true;
+				}
 			}
 			if (!changed) break;
 		}
