@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 极简 JSON 解析器（只服务于 {@code .mixins.json}）。
  *
- * <p>为什么不直接用 Gson：forbric-next-mixin 是织入层，必须保持零第三方依赖，
+ * <p>为什么不直接用 Gson：neoforbric-mixin 是织入层，必须保持零第三方依赖，
  * 否则会把 Gson 拖进 mod 的 classpath 污染隔离边界。mixins.json 结构很固定
  * （对象 + 字符串数组 + 少量字符串/布尔值），手写一个递归下降解析器足够。
  *

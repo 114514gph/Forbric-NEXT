@@ -1,5 +1,5 @@
 plugins { id 'java' }
-description = 'Forbric-NEXT client installer (GUI)'
+description = 'NeoForbric client installer (GUI)'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

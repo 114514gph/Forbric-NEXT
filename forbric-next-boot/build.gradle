@@ -1,6 +1,6 @@
 plugins { id 'java-library' }
 description = 'Between-ecosystem boot orchestrator'
 dependencies {
-    api project(':forbric-next-loader-api')
-    implementation project(':forbric-next-common')
+    api project(':neoforbric-loader-api')
+    implementation project(':neoforbric-common')
 }

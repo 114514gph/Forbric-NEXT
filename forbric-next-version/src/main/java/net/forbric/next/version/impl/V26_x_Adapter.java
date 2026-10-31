@@ -7,7 +7,7 @@ import net.forbric.next.version.VersionAdapter;
  * Minecraft 26.x adapter (target version, matches Forbric 0.3.0's 26.2).
  *
  * <p>This is the primary target. It uses Mojmap, requires Java 21+ (the game itself needs 25),
- * and is the version Forbric-NEXT will fully support first.
+ * and is the version NeoForbric will fully support first.
  */
 public class V26_x_Adapter implements VersionAdapter {
 

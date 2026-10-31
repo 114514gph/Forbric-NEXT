@@ -15,7 +15,7 @@ import java.util.zip.ZipFile;
 /**
  * 极简 Forge mods.toml 解析器。
  *
- * <p>只支持 Forbric-NEXT 实际需要的子集：
+ * <p>只支持 NeoForbric 实际需要的子集：
  * <pre>
  * [[mods]]
  * modId   = "jei"

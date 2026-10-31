@@ -1,4 +1,4 @@
-# Forbric-NEXT
+# NeoForbric
 
 [简体中文](README.zh-CN.md) | **English**
 
@@ -25,15 +25,15 @@ I spent a while hacking on [Forbric 0.3.0](https://github.com/Ray-T-r/Minecraft-
 
 - **Old loader still propping up the new one.** The "sovereign kernel" still pulled build artifacts from the old forbric-loader's shell scripts, and a 3800-line bytecode transformer existed purely to rename old class names to new ones at runtime.
 
-So I stopped patching and started over. Forbric-NEXT is a clean module graph where each ecosystem owns its own discovery, dependency resolution, and lifecycle. The boot layer only decides *between* ecosystems — it never re-sorts a mod list that belongs to another loader.
+So I stopped patching and started over. NeoForbric is a clean module graph where each ecosystem owns its own discovery, dependency resolution, and lifecycle. The boot layer only decides *between* ecosystems — it never re-sorts a mod list that belongs to another loader.
 
 ## How it's different from Connector / Kilt
 
 You've probably heard of [Sinytra Connector](https://github.com/Sinytra/Connector) or [Kilt](https://github.com/FabricMC/fabric-loader) (the Fabric-on-NeoForge layer). They're translation mods you install on top of an existing loader — they reimplement Fabric API inside Forge, or Forge's event bus inside Fabric. That works, but it means one ecosystem is always the "real" host and the other is running through a shim.
 
-Forbric-NEXT is the loader itself. There's no host loader being translated. Each ecosystem's mod discovery, metadata parsing, entrypoint ordering, and mixin wiring runs through its own module. The boot orchestrator calls `discover() → resolve() → runPhase()` on each loader and nothing else. It doesn't know your mod IDs. It doesn't mix cross-ecosystem dependencies into one graph.
+NeoForbric is the loader itself. There's no host loader being translated. Each ecosystem's mod discovery, metadata parsing, entrypoint ordering, and mixin wiring runs through its own module. The boot orchestrator calls `discover() → resolve() → runPhase()` on each loader and nothing else. It doesn't know your mod IDs. It doesn't mix cross-ecosystem dependencies into one graph.
 
-**That said:** Connector is mature and works for most people. Forbric-NEXT is an alpha skeleton. If Connector already runs your modpack, use Connector. Forbric-NEXT is for people who want to understand how a three-ecosystem loader actually works under the hood, or who want to build a loader that doesn't force one ecosystem to be the host.
+**That said:** Connector is mature and works for most people. NeoForbric is an alpha skeleton. If Connector already runs your modpack, use Connector. NeoForbric is for people who want to understand how a three-ecosystem loader actually works under the hood, or who want to build a loader that doesn't force one ecosystem to be the host.
 
 ## Installation
 
@@ -41,17 +41,17 @@ Forbric-NEXT is the loader itself. There's no host loader being translated. Each
 
 Requires **JRE 17 or later**.
 
-1. Download `forbric-next-installer.jar` from the [latest release](https://github.com/114514gph/Forbric-NEXT/releases/latest).
+1. Download `neoforbric-installer.jar` from the [latest release](https://github.com/114514gph/NeoForbric/releases/latest).
 2. Run it:
    ```bash
-   java -jar forbric-next-installer.jar
+   java -jar neoforbric-installer.jar
    ```
 3. Pick your Minecraft version from the dropdown (1.18.2 through 26.3).
 4. Verify the `.minecraft` path — it auto-detects the default location, but use **Browse…** if your launcher stores it elsewhere.
-5. Click **Install**. The installer creates a `{mc-version}-forbric-next` folder in your `versions/` directory.
+5. Click **Install**. The installer creates a `{mc-version}-neoforbric` folder in your `versions/` directory.
 6. Open your launcher. The new version should appear in the version list. Launch it like any other version.
 
-To uninstall: click **Uninstall** in the installer, or just delete the `{mc-version}-forbric-next` folder from `versions/`.
+To uninstall: click **Uninstall** in the installer, or just delete the `{mc-version}-neoforbric` folder from `versions/`.
 
 ### Dedicated server (CLI installer)
 
@@ -59,10 +59,10 @@ Requires **JRE 17 or later**.
 
 ```bash
 # Pure Forbric server (default)
-java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --accept-eula
+java -jar neoforbric-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --accept-eula
 
 # Mixed server (Forbric + Bukkit plugins, Mohist/Arclight style)
-java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --server-mode mixed --accept-eula
+java -jar neoforbric-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --server-mode mixed --accept-eula
 ```
 
 | Flag | What it does |
@@ -73,14 +73,14 @@ java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --s
 | `--accept-eula` | Auto-writes `eula=true` (you still agree to Mojang's EULA) |
 | `--help` | Show all options |
 
-After install, edit `start.sh` / `start.bat` to adjust JVM flags, then run it. A `.forbric-next.toml` config file is written for you to customize load behavior.
+After install, edit `start.sh` / `start.bat` to adjust JVM flags, then run it. A `.neoforbric.toml` config file is written for you to customize load behavior.
 
 ## Where do I put mods
 
-**All mods go in the same `mods` folder.** Forbric-NEXT doesn't sort them by ecosystem — drop Fabric, Forge, NeoForge, and Quilt mods all in together.
+**All mods go in the same `mods` folder.** NeoForbric doesn't sort them by ecosystem — drop Fabric, Forge, NeoForge, and Quilt mods all in together.
 
 The exact path depends on your launcher:
-- Version-isolated launchers (PCL2, HMCL): `.minecraft/versions/{mc-version}-forbric-next/mods/`
+- Version-isolated launchers (PCL2, HMCL): `.minecraft/versions/{mc-version}-neoforbric/mods/`
 - Non-isolated: your `.minecraft/mods/` (the same one other versions use)
 
 **Quilt mods** are auto-detected: if a jar has `quilt.mod.json`, it's loaded as Quilt; if it only has `fabric.mod.json`, it's loaded as Fabric. You don't need to tell the installer which is which.
@@ -100,7 +100,7 @@ This is **alpha**. It compiles, the lifecycle runs end-to-end, and we've verifie
 | Mixin weaving (Sponge Mixin 0.8.7, verified on real MC 1.21.1) | |
 | Cross-version remapping (constant-pool class name rewriting) | |
 | Cross-ecosystem mod arbitration (dedup, conflict detection, forbric-mods.txt) | |
-| Load report + crash analysis (.forbric-next/) | |
+| Load report + crash analysis (.neoforbric/) | |
 | Event bridge (Server/Client lifecycle + block/item registration) | |
 | Version adapter SPI (1.18 / 1.20 / 1.21 / 26.x interfaces) | |
 | Bukkit mixed-server SPI (interface defined) | |
@@ -127,7 +127,7 @@ Fabric Loader 26.1.2 is the baseline (it's versioned independently of MC).
 |--------------|------------|
 | Installer says "requires Java 17+" | Install a newer JRE. If you already run Minecraft, you probably have one — point `JAVA_HOME` at it. |
 | Server boot stops with "Unmet mandatory mod dependencies" | A mod needs a prerequisite that isn't installed. The error lists exactly what's missing. Install it, or add `-Dforbric.compatibilityPolicy=continue` to skip. |
-| A mod loads but doesn't do anything | Check `.forbric-next/load-report.txt` next to your mods folder. Mods that failed to initialize are listed there. |
+| A mod loads but doesn't do anything | Check `.neoforbric/load-report.txt` next to your mods folder. Mods that failed to initialize are listed there. |
 | Mixed server mode errors about Bukkit | The Bukkit SPI is interface-only. Plugin loading isn't implemented yet — mixed mode currently just sets the JVM flag. |
 | Quilt mod not detected | Make sure the jar has `quilt.mod.json` in its root. Some "Quilt" mods are actually Fabric mods with Quilt compatibility — they'll load as Fabric. |
 
@@ -136,8 +136,8 @@ Fabric Loader 26.1.2 is the baseline (it's versioned independently of MC).
 Requires **JDK 21**.
 
 ```bash
-git clone https://github.com/114514gph/Forbric-NEXT.git
-cd Forbric-NEXT
+git clone https://github.com/114514gph/NeoForbric.git
+cd NeoForbric
 ./gradlew build
 ```
 
@@ -145,16 +145,16 @@ Maven goes through Aliyun mirrors, Gradle through Tencent — no proxy setup nee
 
 ### Adding a new MC version
 
-1. Create a class in `forbric-next-version/.../impl/` implementing `VersionAdapter`.
+1. Create a class in `neoforbric-version/.../impl/` implementing `VersionAdapter`.
 2. List the class names, event constants, and mapping scheme for that version.
 3. **Don't guess class names.** Use [Linkie](https://linkie.shedaniel.dev) to look up cross-version mappings. For 1.19.4+, Mojang publishes official mappings (the game jar isn't fully obfuscated anymore) — decompile with Vineflower to confirm exact names.
 4. Register your adapter in `VersionAdapterRegistry.initializeBuiltins()`.
 
 ### Extending the SPI
 
-- New loader ecosystem: implement `ModLoader` in `forbric-next-loader-api`, register in `forbric-next-boot`.
-- New event: add a method to the appropriate bridge interface in `forbric-next-fabric-api`.
-- New server mode: extend `MixedServerMode` in `forbric-next-loader-api/.../bukkit/`.
+- New loader ecosystem: implement `ModLoader` in `neoforbric-loader-api`, register in `neoforbric-boot`.
+- New event: add a method to the appropriate bridge interface in `neoforbric-fabric-api`.
+- New server mode: extend `MixedServerMode` in `neoforbric-loader-api/.../bukkit/`.
 
 ## Credits
 

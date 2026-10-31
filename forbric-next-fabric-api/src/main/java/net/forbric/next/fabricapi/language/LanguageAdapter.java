@@ -13,7 +13,7 @@ package net.forbric.next.fabricapi.language;
  * JVM languages provide their own adapter that knows how to construct the entrypoint
  * (e.g. calling a Kotlin object's INSTANCE field).
  *
- * <p>Forbric-NEXT ships the Java adapter out of the box. Kotlin and Scala adapters are
+ * <p>NeoForbric ships the Java adapter out of the box. Kotlin and Scala adapters are
  * pluggable: a mod jar can declare its own, or the user can install fabric-language-kotlin.
  */
 public interface LanguageAdapter {

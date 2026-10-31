@@ -1,15 +1,15 @@
 plugins { id 'application' }
-description = 'Forbric-NEXT launcher entry point'
+description = 'NeoForbric launcher entry point'
 application {
     mainClass = 'net.forbric.next.launcher.Main'
 }
 dependencies {
-    implementation project(':forbric-next-boot')
-    implementation project(':forbric-next-fabric')
-    implementation project(':forbric-next-fabric-api')
-    implementation project(':forbric-next-forge')
-    implementation project(':forbric-next-neoforge')
-    implementation project(':forbric-next-common')
+    implementation project(':neoforbric-boot')
+    implementation project(':neoforbric-fabric')
+    implementation project(':neoforbric-fabric-api')
+    implementation project(':neoforbric-forge')
+    implementation project(':neoforbric-neoforge')
+    implementation project(':neoforbric-common')
     // HeadlessPreflight 需要调 ModRemapPipeline
-    implementation project(':forbric-next-remapper')
+    implementation project(':neoforbric-remapper')
 }

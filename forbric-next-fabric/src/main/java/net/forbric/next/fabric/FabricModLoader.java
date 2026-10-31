@@ -36,7 +36,7 @@ import net.forbric.next.remap.ModRemapPipeline;
  *         <li>{@link LoadPhase#SIDED_SETUP} → client（CLIENT 环境）或 server（SERVER 环境）entrypoints</li>
  *       </ul>
  *   </li>
- *   <li>{@link #onShutdown} — 触发 stopping 事件 + 写 {@code .forbric-next/load-report.txt}。</li>
+ *   <li>{@link #onShutdown} — 触发 stopping 事件 + 写 {@code .neoforbric/load-report.txt}。</li>
  * </ol>
  *
  * <p><b>关键不变量：</b>Fabric mod 顺序只按 id 字典序；depends 只用来判断能不能加载，
@@ -88,7 +88,7 @@ public class FabricModLoader implements ModLoader {
 
 	/**
 	 * 当前运行的 MC 版本。骨架阶段从系统属性 {@code forbric.mc.version} 读，
-	 * 缺省 {@code 26.3}（Forbric-NEXT 的目标基线）。后续由 boot 阶段从版本清单里注入。
+	 * 缺省 {@code 26.3}（NeoForbric 的目标基线）。后续由 boot 阶段从版本清单里注入。
 	 */
 	private static String currentMcVersion() {
 		return System.getProperty("forbric.mc.version", "26.3");
@@ -111,7 +111,7 @@ public class FabricModLoader implements ModLoader {
 	 *   <li>重映射失败 → 回退原 jar 继续加载（mod 可能在某些类上崩，但不挡发现流程）。</li>
 	 * </ol>
 	 *
-	 * <p>不会因为版本号不匹配就把 mod 拒掉——这是 Forbric-NEXT 作为兼容层的核心行为。
+	 * <p>不会因为版本号不匹配就把 mod 拒掉——这是 NeoForbric 作为兼容层的核心行为。
 	 */
 	private DiscoveredFabricMod remapIfVersionMismatch(DiscoveredFabricMod m, String currentMcVersion) {
 		String mcRange = m.depends() == null ? null : m.depends().get("minecraft");

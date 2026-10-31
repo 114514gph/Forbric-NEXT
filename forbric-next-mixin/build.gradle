@@ -14,8 +14,8 @@ repositories {
 }
 
 dependencies {
-    api project(':forbric-next-common')
-    api project(':forbric-next-loader-api')
+    api project(':neoforbric-common')
+    api project(':neoforbric-loader-api')
 
     // Sponge Mixin（Fabric fork，支持 Java 21 字节码）。
     api 'net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7'

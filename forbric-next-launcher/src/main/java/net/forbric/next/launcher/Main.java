@@ -14,7 +14,7 @@ import net.forbric.next.fabricapi.event.ServerLifecycleEvents;
 import net.forbric.next.fabricapi.language.LanguageAdapterRegistry;
 
 /**
- * Forbric-NEXT entry point.
+ * NeoForbric entry point.
  *
  * <p>This is the main class the game launch wrapper invokes. It wires up the three ecosystem
  * loaders and hands control to the {@link DefaultBootOrchestrator}.
@@ -26,7 +26,7 @@ import net.forbric.next.fabricapi.language.LanguageAdapterRegistry;
 public final class Main {
 
 	public static void main(String[] args) {
-		NextLog.info("Forbric-NEXT 0.1.0-skeleton booting");
+		NextLog.info("NeoForbric 0.1.0-skeleton booting");
 
 		Path gameDir = Paths.get(".").toAbsolutePath();
 		Path modsDir = gameDir.resolve("mods");
@@ -68,6 +68,6 @@ public final class Main {
 		// Shutdown: let the Fabric loader fire stopping/stopped events.
 		fabric.onShutdown();
 
-		NextLog.info("Forbric-NEXT skeleton boot complete (handoff to game main is not implemented yet)");
+		NextLog.info("NeoForbric skeleton boot complete (handoff to game main is not implemented yet)");
 	}
 }

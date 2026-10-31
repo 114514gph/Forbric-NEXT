@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Bukkit 插件加载桥接 SPI（混合服务端用）。
  *
- * <p><b>定位：</b>这是一个<em>接口</em>，不是实现。Forbric-NEXT 内核本身不内嵌 Bukkit 实现
+ * <p><b>定位：</b>这是一个<em>接口</em>，不是实现。NeoForbric 内核本身不内嵌 Bukkit 实现
  * （那会拖入整个 CraftBukkit/Spigot 依赖）。真正的桥接实现由可选的混合端模块提供
  * （参考 Mohist / Arclight 如何把 Bukkit PluginClassLoader 嫁接到 Forge 的模块系统上）。
  *

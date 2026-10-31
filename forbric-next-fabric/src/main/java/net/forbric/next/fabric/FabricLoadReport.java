@@ -18,7 +18,7 @@ import net.forbric.next.fabric.FabricModDiscovery.DiscoveredFabricMod;
 /**
  * Fabric 加载报告。
  *
- * <p>写到 {@code <gameDir>/.forbric-next/load-report.txt}，分三段：
+ * <p>写到 {@code <gameDir>/.neoforbric/load-report.txt}，分三段：
  * <ol>
  *   <li>成功加载的 mod（id / 版本 / 生态系）</li>
  *   <li>entrypoint 执行失败的 mod（id / 组 / 类 / 原因）</li>
@@ -57,17 +57,17 @@ public final class FabricLoadReport {
 	}
 
 	/**
-	 * 把报告写到 {@code <gameDir>/.forbric-next/load-report.txt}。
+	 * 把报告写到 {@code <gameDir>/.neoforbric/load-report.txt}。
 	 *
 	 * @param gameDir 游戏根目录
 	 */
 	public void write(Path gameDir) {
-		Path reportDir = gameDir.resolve(".forbric-next");
+		Path reportDir = gameDir.resolve(".neoforbric");
 		Path reportFile = reportDir.resolve("load-report.txt");
 		try {
 			Files.createDirectories(reportDir);
 			StringBuilder sb = new StringBuilder();
-			sb.append("Forbric-NEXT Fabric/Quilt 加载报告\n");
+			sb.append("NeoForbric Fabric/Quilt 加载报告\n");
 			sb.append("生成时间: ").append(LocalDateTime.now().format(TS)).append('\n');
 			sb.append("========================================\n\n");
 

@@ -13,7 +13,7 @@ import net.forbric.next.common.NextLog;
  * 物品 / 流体的跨系桥（Forge ↔ Fabric）。
  *
  * <p><b>为什么全程 {@link Object} + 反射：</b>Forge 的 ItemStack 和 Fabric(yarn) 的 ItemStack
- * 是两套不同映射的类，编译期谁也不认识谁。Forbric-NEXT 作为中间层不能把任何一侧的 API
+ * 是两套不同映射的类，编译期谁也不认识谁。NeoForbric 作为中间层不能把任何一侧的 API
  * 编进自己的字节码，否则就被绑死在某一侧。所以桥接只做两件事：
  * <ol>
  *   <li><b>快照（读）</b>：用反射从一侧的 stack 里抽出中立三元组

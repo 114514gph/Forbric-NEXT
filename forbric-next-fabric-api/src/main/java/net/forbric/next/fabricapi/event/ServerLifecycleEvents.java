@@ -6,7 +6,7 @@ import java.util.function.Consumer;
  * Server lifecycle events, mirroring Fabric API's {@code ServerLifecycleEvents}.
  *
  * <p>A mod registers on these to run code when the dedicated server starts/stops.
- * Forbric-NEXT posts to these from the boot orchestrator's GAME_STARTED / shutdown phases.
+ * NeoForbric posts to these from the boot orchestrator's GAME_STARTED / shutdown phases.
  *
  * <p><b>事件上下文用具体 record，不用 Proxy：</b>每个事件都带一个具体的 {@code XxxEvent}
  * record（如 {@link ServerStartedEvent}），回调签名是 {@code Consumer<XxxEvent>} 而不是

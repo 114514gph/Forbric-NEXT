@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Catalog of MC versions the Forbric-NEXT installer supports.
+ * Catalog of MC versions the NeoForbric installer supports.
  *
  * <p>Each entry carries:
  * <ul>
@@ -55,7 +55,7 @@ public final class InstallerVersionCatalog {
 		CATALOG.put("26.3", new CatalogEntry(
 				"26.3", true,
 				"0.155.2+26.3", null, "26.3.0.76",
-				"Forbric-NEXT primary target; NeoForge 26.3.0.76"));
+				"NeoForbric primary target; NeoForge 26.3.0.76"));
 	}
 
 	public static Map<String, CatalogEntry> all() {

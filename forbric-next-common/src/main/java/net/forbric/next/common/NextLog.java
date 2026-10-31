@@ -7,15 +7,15 @@ public final class NextLog {
 	private NextLog() {}
 
 	public static void info(String msg, Object... args) {
-		System.out.println("[Forbric-NEXT] " + format(msg, args));
+		System.out.println("[NeoForbric] " + format(msg, args));
 	}
 
 	public static void warn(String msg, Object... args) {
-		System.out.println("[Forbric-NEXT][WARN] " + format(msg, args));
+		System.out.println("[NeoForbric][WARN] " + format(msg, args));
 	}
 
 	public static void error(String msg, Object... args) {
-		System.err.println("[Forbric-NEXT][ERROR] " + format(msg, args));
+		System.err.println("[NeoForbric][ERROR] " + format(msg, args));
 	}
 
 	private static String format(String msg, Object... args) {

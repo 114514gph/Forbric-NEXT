@@ -1,4 +1,4 @@
-# Forbric-NEXT
+# NeoForbric
 
 **简体中文** | [English](README.md)
 
@@ -25,15 +25,15 @@
 
 - **旧 loader 还在给新内核兜底。** 号称"主权内核"，结果构建产物还得从旧 forbric-loader 的 shell 脚本里拿，还有一个 3800 行的字节码转换器专门在运行期把旧类名重定向到新类。
 
-所以我不修了，重写。Forbric-NEXT 是一个干净的模块图，每个生态系自己管自己的发现、依赖解析和生命周期。boot 层只做"跨系编排"——绝不替别的加载器重排 mod 列表。
+所以我不修了，重写。NeoForbric 是一个干净的模块图，每个生态系自己管自己的发现、依赖解析和生命周期。boot 层只做"跨系编排"——绝不替别的加载器重排 mod 列表。
 
 ## 和 Connector / Kilt 有什么区别
 
 你大概听说过 [Sinytra Connector](https://github.com/Sinytra/Connector) 或者 Kilt（Fabric-on-NeoForge 层）。它们是装在现有加载器上的翻译 mod——在 Forge 里重新实现 Fabric API，或者在 Fabric 里模拟 Forge 事件总线。能用，但总有一个生态系是"亲生"的，另一个是跑在垫片上的。
 
-Forbric-NEXT 是加载器本身。没有宿主加载器被翻译。每个生态系的 mod 发现、元数据解析、entrypoint 排序、mixin 接线都走自己的模块。boot 编排器对每个加载器只调 `discover() → resolve() → runPhase()`，除此之外什么都不做。它不知道你的 mod id，不把跨系依赖塞进一张图。
+NeoForbric 是加载器本身。没有宿主加载器被翻译。每个生态系的 mod 发现、元数据解析、entrypoint 排序、mixin 接线都走自己的模块。boot 编排器对每个加载器只调 `discover() → resolve() → runPhase()`，除此之外什么都不做。它不知道你的 mod id，不把跨系依赖塞进一张图。
 
-**不过说清楚：** Connector 已经很成熟了，大多数人用它就行。Forbric-NEXT 还是 alpha 骨架。如果 Connector 已经能跑你的整合包，就用 Connector。Forbric-NEXT 是给想搞懂三系加载器底层怎么跑的人，或者想做一个不强迫某一系当宿主的加载器的人准备的。
+**不过说清楚：** Connector 已经很成熟了，大多数人用它就行。NeoForbric 还是 alpha 骨架。如果 Connector 已经能跑你的整合包，就用 Connector。NeoForbric 是给想搞懂三系加载器底层怎么跑的人，或者想做一个不强迫某一系当宿主的加载器的人准备的。
 
 ## 安装方法
 
@@ -41,17 +41,17 @@ Forbric-NEXT 是加载器本身。没有宿主加载器被翻译。每个生态�
 
 需要 **JRE 17 或以上**。
 
-1. 从[最新 Release](https://github.com/114514gph/Forbric-NEXT/releases/latest) 下载 `forbric-next-installer.jar`。
+1. 从[最新 Release](https://github.com/114514gph/NeoForbric/releases/latest) 下载 `neoforbric-installer.jar`。
 2. 运行：
    ```bash
-   java -jar forbric-next-installer.jar
+   java -jar neoforbric-installer.jar
    ```
 3. 下拉框选 Minecraft 版本（1.18.2 到 26.3）。
 4. 确认 `.minecraft` 路径——会自动检测默认位置，你的启动器如果放在别处就点 **Browse…**。
-5. 点 **Install**。安装器会在 `versions/` 下创建 `{mc版本}-forbric-next` 目录。
+5. 点 **Install**。安装器会在 `versions/` 下创建 `{mc版本}-neoforbric` 目录。
 6. 打开启动器，新版本会出现在版本列表里。像启动其他版本一样启动就行。
 
-卸载：点安装器的 **Uninstall** 按钮，或者直接删 `versions/{mc版本}-forbric-next` 目录。
+卸载：点安装器的 **Uninstall** 按钮，或者直接删 `versions/{mc版本}-neoforbric` 目录。
 
 ### 专用服务端（命令行安装器）
 
@@ -59,10 +59,10 @@ Forbric-NEXT 是加载器本身。没有宿主加载器被翻译。每个生态�
 
 ```bash
 # 纯 Forbric 服务端（默认）
-java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --accept-eula
+java -jar neoforbric-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --accept-eula
 
 # 混合端（Forbric + Bukkit 插件，Mohist/Arclight 风格）
-java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --server-mode mixed --accept-eula
+java -jar neoforbric-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --server-mode mixed --accept-eula
 ```
 
 | 参数 | 作用 |
@@ -73,14 +73,14 @@ java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --s
 | `--accept-eula` | 自动写 `eula=true`（你仍然同意 Mojang 的 EULA） |
 | `--help` | 显示所有参数 |
 
-装完后编辑 `start.sh` / `start.bat` 调整 JVM 参数，然后运行。会自动写一个 `.forbric-next.toml` 配置文件。
+装完后编辑 `start.sh` / `start.bat` 调整 JVM 参数，然后运行。会自动写一个 `.neoforbric.toml` 配置文件。
 
 ## mod 放哪里
 
-**所有 mod 放进同一个 `mods` 文件夹。** Forbric-NEXT 不按生态系分类——Fabric、Forge、NeoForge、Quilt 的 mod 全丢进去就行。
+**所有 mod 放进同一个 `mods` 文件夹。** NeoForbric 不按生态系分类——Fabric、Forge、NeoForge、Quilt 的 mod 全丢进去就行。
 
 具体路径取决于启动器：
-- 版本隔离的启动器（PCL2、HMCL）：`.minecraft/versions/{mc版本}-forbric-next/mods/`
+- 版本隔离的启动器（PCL2、HMCL）：`.minecraft/versions/{mc版本}-neoforbric/mods/`
 - 非隔离的：你的 `.minecraft/mods/`（和其他版本共用的那个）
 
 **Quilt mod 自动识别**：jar 根目录有 `quilt.mod.json` 就是 Quilt mod，只有 `fabric.mod.json` 就是 Fabric mod。不需要你手动区分。
@@ -97,7 +97,7 @@ java -jar forbric-next-server-installer.jar --mc 1.21.1 --dir /opt/mc-server --s
 | Fabric / Quilt mod 发现（解析 fabric.mod.json / quilt.mod.json） | 真正启动 Minecraft |
 | Forge / NeoForge mod 识别（扫描 META-INF/mods.toml / neoforge.mods.toml） | Forge / NeoForge mod 加载与运行时（mod classloader / mod-bus 未接） |
 | Fabric entrypoint 执行（preLaunch→main→client→server，单 mod 失败隔离） | Fabric mod 在真实 MC JVM 内运行 |
-| 加载报告（.forbric-next/load-report.txt） | |
+| 加载报告（.neoforbric/load-report.txt） | |
 | 最小 fabric-api 事件桥（服务端/客户端生命周期 + 方块/物品注册） | |
 | 版本适配层 SPI（1.18/1.20/1.21/26.x 接口定义好了） | 功能性版本适配器（只有 26.x 标记了 functional） |
 | Bukkit 混合端 SPI（接口定义好了） | Bukkit 插件加载器实现 |
@@ -124,7 +124,7 @@ Fabric Loader 基线版本 26.1.2（独立于 MC 版本号）。
 |----------|--------|
 | 安装器提示 "requires Java 17+" | 装个新一点的 JRE。如果你已经能跑 Minecraft，大概率已经有了——把 `JAVA_HOME` 指过去。 |
 | 服务端启动停在 "Unmet mandatory mod dependencies" | 某个 mod 缺前置。错误信息会列出具体缺什么。装上，或者在启动命令加 `-Dforbric.compatibilityPolicy=continue` 跳过。 |
-| mod 装了但没反应 | 看 mods 文件夹旁边的 `.forbric-next/load-report.txt`。初始化失败的 mod 会列在那里。 |
+| mod 装了但没反应 | 看 mods 文件夹旁边的 `.neoforbric/load-report.txt`。初始化失败的 mod 会列在那里。 |
 | 混合端报 Bukkit 相关错误 | Bukkit SPI 目前只有接口定义，插件加载还没实现——mixed 模式现在只是写个 JVM 参数。 |
 | Quilt mod 没被识别 | 确认 jar 根目录有 `quilt.mod.json`。有些"Quilt" mod 其实是 Fabric mod 带 Quilt 兼容——它们会被当 Fabric mod 加载，这是正常的。 |
 
@@ -133,8 +133,8 @@ Fabric Loader 基线版本 26.1.2（独立于 MC 版本号）。
 需要 **JDK 21**。
 
 ```bash
-git clone https://github.com/114514gph/Forbric-NEXT.git
-cd Forbric-NEXT
+git clone https://github.com/114514gph/NeoForbric.git
+cd NeoForbric
 ./gradlew build
 ```
 
@@ -142,16 +142,16 @@ Maven 走阿里云镜像，Gradle 走腾讯云——在国内不需要自己配�
 
 ### 加新 MC 版本
 
-1. 在 `forbric-next-version/.../impl/` 新建一个类实现 `VersionAdapter`。
+1. 在 `neoforbric-version/.../impl/` 新建一个类实现 `VersionAdapter`。
 2. 列出这个版本的类名、事件常量、mapping scheme。
 3. **不要硬编码猜类名。** 用 [Linkie](https://linkie.shedaniel.dev) 查跨版本映射。1.19.4 以上 Mojang 官方发布了 mappings（游戏 jar 不再完全混淆）——用 Vineflower 反编译确认准确名字。
 4. 在 `VersionAdapterRegistry.initializeBuiltins()` 注册你的适配器。
 
 ### 扩展 SPI
 
-- 新加载器生态系：在 `forbric-next-loader-api` 实现 `ModLoader`，在 `forbric-next-boot` 注册。
-- 新事件：在 `forbric-next-fabric-api` 对应的桥接口加方法。
-- 新服务端模式：扩展 `forbric-next-loader-api/.../bukkit/` 里的 `MixedServerMode`。
+- 新加载器生态系：在 `neoforbric-loader-api` 实现 `ModLoader`，在 `neoforbric-boot` 注册。
+- 新事件：在 `neoforbric-fabric-api` 对应的桥接口加方法。
+- 新服务端模式：扩展 `neoforbric-loader-api/.../bukkit/` 里的 `MixedServerMode`。
 
 ## 致谢
 

@@ -11,7 +11,7 @@ import java.nio.file.Path;
  *   <li><b>fail</b>：遇到第一个失败立即停止启动，打完整错误栈退出。</li>
  * </ul>
  *
- * <p>配置从 {@code .forbric-next.toml} 的 {@code [load] compatibility-policy} 读，
+ * <p>配置从 {@code .neoforbric.toml} 的 {@code [load] compatibility-policy} 读，
  * 系统属性 {@code forbric.compatibilityPolicy} 可以覆盖。
  */
 public enum CompatibilityPolicy {
@@ -30,7 +30,7 @@ public enum CompatibilityPolicy {
 		// 读配置文件（极简解析，不引 TOML 库）
 		if (gameDir != null) {
 			try {
-				Path cfg = gameDir.resolve(".forbric-next.toml");
+				Path cfg = gameDir.resolve(".neoforbric.toml");
 				if (java.nio.file.Files.exists(cfg)) {
 					for (String line : java.nio.file.Files.readAllLines(cfg)) {
 						if (line.contains("compatibility-policy")) {

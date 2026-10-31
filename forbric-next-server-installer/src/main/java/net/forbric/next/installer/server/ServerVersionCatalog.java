@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Catalog of MC versions the Forbric-NEXT server installer supports.
+ * Catalog of MC versions the NeoForbric server installer supports.
  * Mirrors the client installer's catalog — kept standalone so the server installer
  * doesn't need to depend on the GUI module.
  */

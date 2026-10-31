@@ -16,9 +16,9 @@ import net.forbric.next.fabric.FabricModDiscovery;
 import net.forbric.next.remap.ModRemapPipeline;
 
 /**
- * Forbric-NEXT 无头预检入口（真实验证用）。
+ * NeoForbric 无头预检入口（真实验证用）。
  *
- * <p>这个 main 在真实 26.3 classpath 上跑 Forbric-NEXT 的预检管线，逐个产生校验清单要求的日志标记：
+ * <p>这个 main 在真实 26.3 classpath 上跑 NeoForbric 的预检管线，逐个产生校验清单要求的日志标记：
  * <ol>
  *   <li>{@link FabricModDiscovery#discover} —— 扫描 mods/，打 "发现 FABRIC mod" 日志。</li>
  *   <li>{@link ModArbiter#arbitrate} —— 同名跨生态 mod 冲突，打 "CONFLICT:" 日志。</li>
@@ -28,7 +28,7 @@ import net.forbric.next.remap.ModRemapPipeline;
  *   <li>任何阶段抛异常 → {@link CrashAnalysis#write} 写 crash-analysis.txt。</li>
  * </ol>
  *
- * <p>它不负责启动 MC 本身（那是 KnotClient 的事）；它只证明 Forbric-NEXT 的组件在真实 26.3
+ * <p>它不负责启动 MC 本身（那是 KnotClient 的事）；它只证明 NeoForbric 的组件在真实 26.3
  * 运行时里被触发并打日志。
  */
 public final class HeadlessPreflight {
@@ -38,7 +38,7 @@ public final class HeadlessPreflight {
 		Path modsDir = gameDir.resolve("mods");
 		String mcVersion = System.getProperty("forbric.mc.version", "26.3");
 
-		NextLog.info("Forbric-NEXT HeadlessPreflight starting, MC target = {}", mcVersion);
+		NextLog.info("NeoForbric HeadlessPreflight starting, MC target = {}", mcVersion);
 		NextLog.info("  gameDir = {}", gameDir);
 		NextLog.info("  modsDir = {}", modsDir);
 		NextLog.info("  headless = {}", net.forbric.next.common.HeadlessMode.isHeadless());

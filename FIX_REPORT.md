@@ -1,4 +1,4 @@
-# Forbric Bug 修复报告 & Forbric-NEXT 架构改进
+# Forbric Bug 修复报告 & NeoForbric 架构改进
 
 > 基于 Forbric 0.3.0 (commit 520d7aa, target MC 26.2) 的深度代码审查与修复。
 > 审查范围：417 个 kernel Java 文件 + 140 个 runtime 文件 + 74 个旧 loader 文件 + 35 个 canary 模块。
@@ -40,7 +40,7 @@
 - Gradle 层 0 project dep，源码层 0 `import net.forbric.loader.*`
 - **真正耦合**：kernel 的 runtime sourceSet 编译依赖旧 loader pipeline 产出的三个 jar（merged-base + forge/neo runtime），路径写死 `../forbric-loader/run/`
 - **字节码缝**：`ForbricMergedBaseCompatTransformer` 硬编码 3 条旧类名→interop 类的 ASM 重写
-- Forbric-NEXT 已将此列为头号架构改进：把 MergedBaseBuilder 收编进 kernel 仓库
+- NeoForbric 已将此列为头号架构改进：把 MergedBaseBuilder 收编进 kernel 仓库
 
 ---
 
@@ -59,27 +59,27 @@
 
 ---
 
-## 三、Forbric-NEXT 架构改进
+## 三、NeoForbric 架构改进
 
 ### 设计原则（从 0.3.0 的教训中提炼）
 
 1. **按加载器隔离**：Fabric / Forge / NeoForge 是独立 Gradle 模块，各自拥有自己的发现、依赖图、entrypoint 排序和生命周期。boot 模块只做"跨系编排"，永不重排某系内部的 mod 列表。
 2. **无 per-mod canary 补丁**：兼容 hook 作为通用服务接口（事件总线、注册窗口、类加载策略）存在，不再有 `if (modId.equals("carpet"))` 分支。
 3. **自包含**：不依赖旧 forbric-loader。MergedBaseBuilder 将收编进 kernel 仓库。
-4. **尊重原生顺序**：Fabric mod 组内按 Fabric Loader 的 id 序跑；Forge/NeoForge mod 组内按 Forge 自己的 ModSorter 跑（显式 BEFORE/AFTER 边，mandatory depends 只是 presence 要求）。Forbric-NEXT 只决定"先开哪扇窗、窗里跑哪一系"。
+4. **尊重原生顺序**：Fabric mod 组内按 Fabric Loader 的 id 序跑；Forge/NeoForge mod 组内按 Forge 自己的 ModSorter 跑（显式 BEFORE/AFTER 边，mandatory depends 只是 presence 要求）。NeoForbric 只决定"先开哪扇窗、窗里跑哪一系"。
 
 ### 模块结构
 
 ```
-Forbric-NEXT/
+NeoForbric/
 ├── settings.gradle / build.gradle      # 根配置，阿里云 Maven 镜像
-├── forbric-next-loader-api/            # SPI 定义（ModLoader, LoadPhase, EventBus, BootOrchestrator）
-├── forbric-next-common/                # 共享工具（NextLog）
-├── forbric-next-fabric/                # Fabric 生态加载器（移植 FabricModDiscovery + FabricLoadOrder）
-├── forbric-next-forge/                 # MinecraftForge 生态加载器（移植 Forge ModSorter 语义）
-├── forbric-next-neoforge/              # NeoForge 生态加载器
-├── forbric-next-boot/                  # 跨系编排器（DefaultBootOrchestrator）
-└── forbric-next-launcher/              # 入口 Main
+├── neoforbric-loader-api/            # SPI 定义（ModLoader, LoadPhase, EventBus, BootOrchestrator）
+├── neoforbric-common/                # 共享工具（NextLog）
+├── neoforbric-fabric/                # Fabric 生态加载器（移植 FabricModDiscovery + FabricLoadOrder）
+├── neoforbric-forge/                 # MinecraftForge 生态加载器（移植 Forge ModSorter 语义）
+├── neoforbric-neoforge/              # NeoForge 生态加载器
+├── neoforbric-boot/                  # 跨系编排器（DefaultBootOrchestrator）
+└── neoforbric-launcher/              # 入口 Main
 ```
 
 ### 关键接口契约
@@ -92,17 +92,17 @@ Forbric-NEXT/
 ### 编译验证
 
 ```bash
-cd Forbric-NEXT
+cd NeoForbric
 JAVA_HOME=<jdk21> ./gradlew --no-daemon build   # BUILD SUCCESSFUL
-./gradlew --no-daemon :forbric-next-launcher:run  # 跑通 9 阶段生命周期
+./gradlew --no-daemon :neoforbric-launcher:run  # 跑通 9 阶段生命周期
 ```
 
 ---
 
 ## 四、仍待后续处理的已知限制
 
-1. **顶层 mod 硬依赖缺失不报错**：Fabric 原生会硬失败，Forbric 当前只 WARN。Forbric-NEXT 的 `resolve()` 应在后期加入严格依赖校验。
-2. **MergedBaseBuilder 收编**：kernel 仍依赖旧 loader pipeline 产出的 merged-base jar。Forbric-NEXT 后期需把这个构建脚本搬进自己的仓库。
-3. **fabric-api 事件桥**：kernel 不自带 fabric-api，事件总线靠用户安装的 fabric-api mod。Forbric-NEXT 应考虑提供一个最小事件桥（至少 ServerLifecycleEvents / ClientLifecycleEvents），让基础 Fabric mod 不装 fabric-api 也能跑。
+1. **顶层 mod 硬依赖缺失不报错**：Fabric 原生会硬失败，Forbric 当前只 WARN。NeoForbric 的 `resolve()` 应在后期加入严格依赖校验。
+2. **MergedBaseBuilder 收编**：kernel 仍依赖旧 loader pipeline 产出的 merged-base jar。NeoForbric 后期需把这个构建脚本搬进自己的仓库。
+3. **fabric-api 事件桥**：kernel 不自带 fabric-api，事件总线靠用户安装的 fabric-api mod。NeoForbric 应考虑提供一个最小事件桥（至少 ServerLifecycleEvents / ClientLifecycleEvents），让基础 Fabric mod 不装 fabric-api 也能跑。
 4. **Kotlin/Scala 语言适配器**：不随包发布，Kotlin mod 需用户自行安装 fabric-language-kotlin。
-5. **8 个 per-mod canary 补丁的清理**：在 Forbric-NEXT 中，carpet/create-fly/c2me 等特判应被通用事件 API 吸收。当前骨架保留了方向，具体移植在后续迭代。
+5. **8 个 per-mod canary 补丁的清理**：在 NeoForbric 中，carpet/create-fly/c2me 等特判应被通用事件 API 吸收。当前骨架保留了方向，具体移植在后续迭代。

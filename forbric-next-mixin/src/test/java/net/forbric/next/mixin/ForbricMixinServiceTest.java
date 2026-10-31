@@ -39,7 +39,7 @@ class ForbricMixinServiceTest {
 	void bundledMixinConfigParses() throws Exception {
 		try (var in = getClass().getResourceAsStream("/forbric.test.mixins.json")) {
 			assertNotNull(in, "测试资源 forbric.test.mixins.json 必须在 classpath");
-			ModMixinConfig cfg = MixinConfigReader.parse("forbric.test.mixins.json", "forbric-next-mixin.jar", in);
+			ModMixinConfig cfg = MixinConfigReader.parse("forbric.test.mixins.json", "neoforbric-mixin.jar", in);
 			assertEquals("net.forbric.next.mixin.testmod", cfg.mixinPackage());
 			assertTrue(cfg.activeMixinsForServer().contains("ForbricTestMixin"));
 			assertEquals("JAVA_21", cfg.compatibilityLevel());

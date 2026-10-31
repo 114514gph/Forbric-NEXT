@@ -1,2 +1,2 @@
 plugins { id 'java-library' }
-description = 'Shared utilities for Forbric-NEXT'
+description = 'Shared utilities for NeoForbric'

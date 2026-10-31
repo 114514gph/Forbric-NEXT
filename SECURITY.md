@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Forbric-NEXT is in early skeleton development. The `main` branch is the only actively
+NeoForbric is in early skeleton development. The `main` branch is the only actively
 developed branch at this time.
 
 | Version | Supported |
@@ -11,7 +11,7 @@ developed branch at this time.
 
 ## Reporting a Vulnerability
 
-If you discover a security issue in Forbric-NEXT, please open a private security advisory
+If you discover a security issue in NeoForbric, please open a private security advisory
 via GitHub's Security tab, or contact the maintainers directly. We aim to respond within
 72 hours.
 

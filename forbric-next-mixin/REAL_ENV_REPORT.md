@@ -26,7 +26,7 @@
 > `CompatibilityLevel` 枚举只到 JAVA_18，无法处理 1.21.1 的 class file 65。
 > 因此**运行时**用同包名（`org.spongepowered.asm.*`）的 Fabric fork 0.8.7，编译 API 完全一致。
 
-## 2. 新增模块 `forbric-next-mixin`
+## 2. 新增模块 `neoforbric-mixin`
 - `ForbricMixinService` — 封装 `MixinBootstrap.init()` / `MixinEnvironment` / `IMixinTransformer`，
   `init()` 设 side=SERVER、compat=JAVA_21；`registerConfig()` 注册 `.mixins.json`；
   `weave(name, bytes)` 暴露 transformer 给 classloader 钩子。

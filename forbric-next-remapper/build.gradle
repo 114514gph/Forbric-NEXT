@@ -2,7 +2,7 @@ plugins { id 'java-library' }
 description = 'Cross-version legacy mod runtime bytecode remapping layer (constant-pool only, no ASM/tiny-remapper)'
 
 dependencies {
-    api project(':forbric-next-loader-api')
-    implementation project(':forbric-next-common')
+    api project(':neoforbric-loader-api')
+    implementation project(':neoforbric-common')
     implementation 'com.google.code.gson:gson:2.10.1'
 }

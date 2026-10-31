@@ -16,7 +16,7 @@ import java.util.List;
  *       Construct → CommonSetup → SidedSetup → Registration → IMC → LoadComplete for Forge)</li>
  * </ul>
  *
- * <p>The boot module (Forbric-NEXT's orchestrator) decides the <em>between-ecosystem</em> sequence:
+ * <p>The boot module (NeoForbric's orchestrator) decides the <em>between-ecosystem</em> sequence:
  * which loader scans first, which lifecycle window runs which group, and when handoff happens.
  * It must never call into a loader's internal mod list to re-sort it.
  */

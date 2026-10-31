@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * Forbric-NEXT client installer — simplified Swing GUI.
+ * NeoForbric client installer — simplified Swing GUI.
  *
  * <p>This is a skeleton: the install button validates inputs and creates the versions folder
  * structure, but does not yet download the 730MB merged game base. When the merged base
@@ -23,7 +23,7 @@ public class ClientInstallerGUI extends JFrame {
 	private final JButton browseBtn = new JButton("Browse…");
 
 	public ClientInstallerGUI() {
-		super("Forbric-NEXT Installer");
+		super("NeoForbric Installer");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(new BorderLayout(8, 8));
 
@@ -91,7 +91,7 @@ public class ClientInstallerGUI extends JFrame {
 		}
 
 		installBtn.setEnabled(false);
-		statusLabel.setText("Installing Forbric-NEXT for MC " + mcVersion + "…");
+		statusLabel.setText("Installing NeoForbric for MC " + mcVersion + "…");
 		progressBar.setValue(10);
 
 		// Skeleton: just create the versions folder
@@ -107,8 +107,8 @@ public class ClientInstallerGUI extends JFrame {
 					progressBar.setValue(80);
 
 					// Write a placeholder json — real version json comes later
-					String json = "{\n  \"id\": \"" + mcVersion + "-forbric-next\",\n  \"type\": \"release\",\n  \"mainClass\": \"net.forbric.next.launcher.Main\",\n  \"inheritsFrom\": \"" + mcVersion + "\"\n}";
-					java.nio.file.Files.writeString(target.resolve(mcVersion + "-forbric-next.json"), json);
+					String json = "{\n  \"id\": \"" + mcVersion + "-neoforbric\",\n  \"type\": \"release\",\n  \"mainClass\": \"net.forbric.next.launcher.Main\",\n  \"inheritsFrom\": \"" + mcVersion + "\"\n}";
+					java.nio.file.Files.writeString(target.resolve(mcVersion + "-neoforbric.json"), json);
 
 					progressBar.setValue(100);
 					statusLabel.setText("Done. Installed to " + target);
@@ -133,7 +133,7 @@ public class ClientInstallerGUI extends JFrame {
 			return;
 		}
 		int ok = JOptionPane.showConfirmDialog(this,
-				"Delete " + mcVersion + "-forbric-next from " + mcDir + "?",
+				"Delete " + mcVersion + "-neoforbric from " + mcDir + "?",
 				"Confirm uninstall", JOptionPane.YES_NO_OPTION);
 		if (ok != JOptionPane.YES_OPTION) return;
 
@@ -156,7 +156,7 @@ public class ClientInstallerGUI extends JFrame {
 	public static void main(String[] args) {
 		int javaVer = InstallPaths.detectJavaVersion();
 		if (javaVer < 17) {
-			System.err.println("Forbric-NEXT installer requires Java 17+. Detected: " + javaVer);
+			System.err.println("NeoForbric installer requires Java 17+. Detected: " + javaVer);
 			System.exit(1);
 		}
 		SwingUtilities.invokeLater(() -> new ClientInstallerGUI().setVisible(true));

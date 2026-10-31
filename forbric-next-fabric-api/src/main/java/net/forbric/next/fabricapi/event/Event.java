@@ -9,7 +9,7 @@ import java.util.function.Function;
  * Minimal event bus mimicking Fabric API's event model.
  *
  * <p>Fabric API events are each a singleton object mods register listeners on, and the
- * game-side code invokes via {@code invoker()}. Forbric-NEXT provides this minimal
+ * game-side code invokes via {@code invoker()}. NeoForbric provides this minimal
  * implementation so a mod calling {@code ServerLifecycleEvents.SERVER_STARTED.register(hook)}
  * works without the user installing the full fabric-api jar.
  *

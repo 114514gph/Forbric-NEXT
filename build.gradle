@@ -3,11 +3,11 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
 
-    group = 'net.forbric.next'
-    version = '0.1.0-SNAPSHOT'
+    group = 'net.neoforbric'
+    version = 'beta'
 
     java {
-        // Forbric-NEXT targets JDK 21 LTS (records, pattern matching, sealed types).
+        // NeoForbric targets JDK 21 LTS (records, pattern matching, sealed types).
         // The game itself may need a newer JRE, but the loader bytecode only needs 21.
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21

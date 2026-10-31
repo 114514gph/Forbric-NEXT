@@ -3,7 +3,7 @@ package net.forbric.next.version;
 /**
  * Identifies a specific Minecraft version and its known class/mapping characteristics.
  *
- * <p>Forbric-NEXT is not tied to a single MC version. Each supported version provides
+ * <p>NeoForbric is not tied to a single MC version. Each supported version provides
  * a {@link VersionAdapter} that knows:
  * <ul>
  *   <li>The mapping scheme (Mojmap vs official MCP vs intermediary)</li>

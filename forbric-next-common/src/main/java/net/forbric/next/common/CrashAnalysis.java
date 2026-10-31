@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * 崩溃分析报告——写 {@code .forbric-next/crash-analysis.txt}。
+ * 崩溃分析报告——写 {@code .neoforbric/crash-analysis.txt}。
  *
  * <p>原版 Forbric 的 crash-analysis.txt 是用户排障的第一入口。NEXT 对齐这个设计：
  * 崩溃时不只打日志，还生成一份结构化文件，包含时间、异常栈、当时加载到哪个 mod、
@@ -24,21 +24,21 @@ public final class CrashAnalysis {
 	/**
 	 * 写一份崩溃分析文件。
 	 *
-	 * @param gameDir   游戏目录（.forbric-next/ 在它下面）
+	 * @param gameDir   游戏目录（.neoforbric/ 在它下面）
 	 * @param phase     崩溃时正在执行的阶段
 	 * @param loadedMods 已成功加载的 mod 列表
 	 * @param t         异常
 	 */
 	public static void write(Path gameDir, String phase, List<String> loadedMods, Throwable t) {
 		try {
-			Path dir = gameDir.resolve(".forbric-next");
+			Path dir = gameDir.resolve(".neoforbric");
 			Files.createDirectories(dir);
 			Path file = dir.resolve("crash-analysis.txt");
 
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 
-			pw.println("Forbric-NEXT Crash Report");
+			pw.println("NeoForbric Crash Report");
 			pw.println("=" .repeat(50));
 			pw.println("Time:    " + LocalDateTime.now().format(FMT));
 			pw.println("Phase:   " + phase);

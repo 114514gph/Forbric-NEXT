@@ -1,5 +1,5 @@
 plugins { id 'java' }
-description = 'Forbric-NEXT dedicated server installer (CLI)'
+description = 'NeoForbric dedicated server installer (CLI)'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

@@ -1,4 +1,4 @@
-# Forbric-NEXT on MC 26.3 — Integration Status
+# NeoForbric on MC 26.3 — Integration Status
 
 ## 2026-10-29 Update
 

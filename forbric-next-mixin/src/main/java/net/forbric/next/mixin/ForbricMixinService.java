@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
 import net.forbric.next.common.NextLog;
 
 /**
- * Forbric-NEXT 对 Sponge Mixin 的真实封装。
+ * NeoForbric 对 Sponge Mixin 的真实封装。
  *
  * <p>职责（每一个方法都对应一次真实的 Mixin 调用，不是空壳）：
  * <ol>

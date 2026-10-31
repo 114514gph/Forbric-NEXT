@@ -48,9 +48,9 @@ public final class InstallPaths {
 	}
 
 	/**
-	 * Build the target versions folder for a given MC version and Forbric-NEXT.
+	 * Build the target versions folder for a given MC version and NeoForbric.
 	 */
 	public static Path versionFolder(Path minecraftDir, String mcVersion) {
-		return minecraftDir.resolve("versions").resolve(mcVersion + "-forbric-next");
+		return minecraftDir.resolve("versions").resolve(mcVersion + "-neoforbric");
 	}
 }

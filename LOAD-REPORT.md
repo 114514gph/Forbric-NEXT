@@ -1,4 +1,4 @@
-# Forbric-NEXT Load Report
+# NeoForbric Load Report
 
 MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 更新时间：2026-10-31
@@ -37,7 +37,7 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 ## 🔧 Forge 运行时（代码完成，待测试）
 
-**模块：** `forbric-next-forge`
+**模块：** `neoforbric-forge`
 
 **已实现：**
 - `ForgeAnnotationScanner` — 字节码常量池扫描 @Mod 注解类
@@ -51,7 +51,7 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 ## 🔧 NeoForge 运行时（代码完成，待测试）
 
-**模块：** `forbric-next-neoforge`
+**模块：** `neoforbric-neoforge`
 
 **与 Forge 的差异：**
 - 元数据文件：`META-INF/neoforge.mods.toml`（不是 mods.toml）
@@ -63,7 +63,7 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 ## 🔧 Quilt 运行时（代码完成，待测试）
 
-**文件：** `forbric-next-fabric/QuiltModLoader.java`
+**文件：** `neoforbric-fabric/QuiltModLoader.java`
 
 **与 Fabric 的差异：**
 - 元数据文件：`quilt.mod.json`（Fabric 是 fabric.mod.json）
@@ -74,7 +74,7 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 ## 🔧 跨版本重映射层
 
-**模块：** `forbric-next-remapper`
+**模块：** `neoforbric-remapper`
 
 **已实现：**
 - RuntimeRemapper — class 文件常量池重写（CONSTANT_Class + 描述符 + 字符串常量）

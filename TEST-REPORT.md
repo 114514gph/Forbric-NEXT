@@ -1,4 +1,4 @@
-# Forbric-NEXT 跨版本兼容测试报告
+# NeoForbric 跨版本兼容测试报告
 
 ## 测试环境
 - MC 版本：26.3

@@ -1,9 +1,9 @@
 plugins { id 'java-library' }
 description = 'Fabric ecosystem loader'
 dependencies {
-    api project(':forbric-next-loader-api')
-    api project(':forbric-next-fabric-api')
-    implementation project(':forbric-next-common')
+    api project(':neoforbric-loader-api')
+    api project(':neoforbric-fabric-api')
+    implementation project(':neoforbric-common')
     // 跨版本老 mod 运行时字节码重映射层（1.20.4/1.21.1 → 当前 MC 版本）
-    implementation project(':forbric-next-remapper')
+    implementation project(':neoforbric-remapper')
 }

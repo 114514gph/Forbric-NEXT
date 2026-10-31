@@ -1,4 +1,4 @@
-// Root Gradle config for Forbric-NEXT.
+// Root Gradle config for NeoForbric.
 pluginManagement {
     repositories {
         maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
@@ -7,25 +7,25 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'forbric-next'
+rootProject.name = 'neoforbric'
 
 // Per-loader isolation: each ecosystem owns its own discovery, dependency graph, entrypoint ordering,
 // and lifecycle. The boot module only orchestrates *between* loaders — it never re-sorts a loader's
 // internal mod list.
-include ':forbric-next-common'
-include ':forbric-next-loader-api'
-include ':forbric-next-fabric-api'
-include ':forbric-next-version'
-include ':forbric-next-fabric'
-include ':forbric-next-forge'
-include ':forbric-next-neoforge'
-include ':forbric-next-boot'
-include ':forbric-next-launcher'
-include ':forbric-next-installer'
-include ':forbric-next-server-installer'
+include ':neoforbric-common'
+include ':neoforbric-loader-api'
+include ':neoforbric-fabric-api'
+include ':neoforbric-version'
+include ':neoforbric-fabric'
+include ':neoforbric-forge'
+include ':neoforbric-neoforge'
+include ':neoforbric-boot'
+include ':neoforbric-launcher'
+include ':neoforbric-installer'
+include ':neoforbric-server-installer'
 // 跨版本老 mod 运行时字节码重映射层：把 1.20.4/1.21.1 老 mod 的 class 引用
 // 重写到当前 MC 版本（骨架阶段只重写常量池里的类名 UTF-8 条目）。
-include ':forbric-next-remapper'
+include ':neoforbric-remapper'
 // 真·Mixin 织入层：封装 Sponge Mixin 的 MixinEnvironment / MixinTransformer，
-// 外加 mods 目录的 URLClassLoader 隔离。和 forbric-next-fabric 平级，不反向依赖。
-include ':forbric-next-mixin'
+// 外加 mods 目录的 URLClassLoader 隔离。和 neoforbric-fabric 平级，不反向依赖。
+include ':neoforbric-mixin'
