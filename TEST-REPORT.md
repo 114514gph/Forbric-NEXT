@@ -11,11 +11,11 @@
 
 | Mod | 状态 | 重写类数 | 问题 |
 |-----|------|----------|------|
-| Carpet | ✅ PASS | 715 | 全部 mixin 清空后成功加载到主菜单 |
-| MaLiLib | ⚠️ 进行中 | 491 | ReceivingLevelScreen$Reason 已修复，下一个问题：method_1574() 找不到 |
-| MiniHUD | ⏸️ 待测 | 283 | 依赖 malilib，等 malilib 修好一起测 |
-| Litematica | ⏸️ 待测 | 413 | 依赖 malilib |
-| Tweakeroo | ⏸️ 待测 | 184 | 依赖 malilib |
+| Carpet | ✅ PASS | 715 | 全部 mixin 移除后成功加载到主菜单 |
+| MaLiLib | ⚠️ 部分通过 | 491 | Mixin 阶段通过，运行时报 class_2960 (ResourceLocation) 未重写 |
+| MiniHUD | ⚠️ 部分通过 | 283 | 同上 |
+| Litematica | ⚠️ 部分通过 | 413 | 同上 |
+| Tweakeroo | ⚠️ 部分通过 | 184 | 同上 |
 | Carpet TIS Addition | ❌ FAIL | - | 文件损坏（不是有效 zip） |
 | Xaero's Minimap | ⏸️ 未下载 | - | 需要下载 |
 | X光/XRay | ⏸️ 未下载 | - | 需要下载 |
