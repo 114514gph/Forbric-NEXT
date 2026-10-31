@@ -40,21 +40,20 @@ MC 26.3 客户端跨版本兼容加载测试报告
 | XRay | 下载渠道不可用 |
 | Carpet TIS Addition | 文件已在 mods-bak/，未测试 |
 
-### Forge Mods（架构不兼容）
+### Forge Mods（运行时开发中）
 
-**当前加载器是 Fabric Loader (KnotClient)，无法加载 Forge mod。**
-
-Forbric-NEXT 的设计目标是多系兼容，但当前阶段只实现了 Fabric 加载层。Forge mod 需要 Forge/NeoForge Loader 才能运行，不在本次测试范围内。
+**Forbric-NEXT 设计目标是跨加载器兼容（Fabric + Forge + NeoForge）。**
+当前 `forbric-next-forge` 模块是骨架（203 行），Forge mod 加载逻辑（@Mod 注解扫描、生命周期调度）正在开发中。
 
 | Mod | 备注 |
 |-----|------|
-| Create 机械动力 | Forge mod，需 Forge Loader |
-| Valkyrien Skies 瓦尔基里 | Forge mod，需 Forge Loader |
-| Farmer's Delight 农夫乐事 | Forge mod，需 Forge Loader |
-| ProjectE 等价交换 | Forge mod，需 Forge Loader |
-| Titan 泰坦 | Forge mod，文件在 mods-bak/ |
-| Avaritia 无尽贪婪 | Forge mod，需 Forge Loader |
-| 压缩木棍 | Forge mod，需 Forge Loader |
+| Create 机械动力 | 待 Forge 运行时完成后测试 |
+| Valkyrien Skies 瓦尔基里 | 同上 |
+| Farmer's Delight 农夫乐事 | 同上 |
+| ProjectE 等价交换 | 同上 |
+| Titan 泰坦 | 文件损坏，需重新下载 |
+| Avaritia 无尽贪婪 | 待测试 |
+| 压缩木棍 | 待测试 |
 
 ### 未下载的 Resource Packs
 
