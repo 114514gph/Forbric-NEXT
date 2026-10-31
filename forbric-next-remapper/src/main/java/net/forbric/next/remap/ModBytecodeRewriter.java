@@ -1,5 +1,6 @@
 package net.forbric.next.remap;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -112,6 +114,12 @@ public class ModBytecodeRewriter {
                     byte[] rewritten = RuntimeRemapper.remap(data, mappings);
                     if (rewritten != data) count++;
                     data = rewritten;
+                } else if (entry.getName().startsWith("META-INF/jars/") && entry.getName().endsWith(".jar")) {
+                    // JiJ nested jar: rewrite classes inside the nested jar
+                    int[] nestedCount = {0};
+                    data = rewriteNestedJar(data, mappings, nestedCount);
+                    count += nestedCount[0];
+                    System.out.println("  ↳ nested " + entry.getName() + ": " + nestedCount[0] + " classes rewritten");
                 } else if (entry.getName().endsWith(".mixins.json")) {
                     // 过滤掉有结构问题的 mixin（target class → interface 等）
                     data = filterProblematicMixins(data);
@@ -218,5 +226,45 @@ public class ModBytecodeRewriter {
             if (mixinClassName.contains(k)) return true;
         }
         return false;
+    }
+
+    /**
+     * Rewrite classes inside a nested JiJ jar (byte array in → byte array out).
+     * Writes the number of rewritten classes into outCount[0].
+     */
+    private static byte[] rewriteNestedJar(byte[] jarBytes, RemapMappings mappings, int[] outCount) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (ZipInputStream zin = new ZipInputStream(new ByteArrayInputStream(jarBytes));
+             ZipOutputStream zout = new ZipOutputStream(out)) {
+            ZipEntry entry;
+            while ((entry = zin.getNextEntry()) != null) {
+                // Skip signature files (SHA-256 digests won't match after class rewriting)
+                if (entry.getName().startsWith("META-INF/") && (entry.getName().endsWith(".SF") || entry.getName().endsWith(".RSA") || entry.getName().endsWith(".DSA"))) {
+                    continue;
+                }
+                // Skip mixin configs in nested jars (they reference old intermediary names)
+                if (entry.getName().endsWith(".mixins.json")) {
+                    continue;
+                }
+                byte[] data = zin.readAllBytes();
+                if (entry.getName().endsWith(".class")) {
+                    byte[] rewritten = RuntimeRemapper.remap(data, mappings);
+                    if (rewritten != data) outCount[0]++;
+                    data = rewritten;
+                } else if (entry.getName().equals("fabric.mod.json")) {
+                    // Remove mixins field from nested jar's fabric.mod.json
+                    try {
+                        var parser = new com.google.gson.JsonParser();
+                        var json = parser.parse(new String(data, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                        json.remove("mixins");
+                        data = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    } catch (Exception ignored) {}
+                }
+                zout.putNextEntry(new ZipEntry(entry.getName()));
+                zout.write(data);
+                zout.closeEntry();
+            }
+        }
+        return out.toByteArray();
     }
 }
