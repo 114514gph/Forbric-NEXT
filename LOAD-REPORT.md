@@ -1,16 +1,16 @@
 # Forbric-NEXT Load Report
 
 MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
-测试时间：2026-10-31
+更新时间：2026-10-31
 
 ## 加载器进度总览
 
-| 加载器 | 状态 | 说明 |
-|--------|------|------|
-| Fabric | ✅ 已验证 | 5 个 mod 跑到主菜单 |
-| Forge | 🔧 开发中 | 运行时骨架已写，待真实 mod 验证 |
-| NeoForge | ❌ 未开始 | 复用 Forge 代码，适配 @Mod 注解差异 |
-| Quilt | ❌ 未开始 | 复用 Fabric 代码，适配 Quilt Loader API |
+| 加载器 | 代码 | 真实 mod 测试 | 说明 |
+|--------|------|--------------|------|
+| Fabric | ✅ 完整 | ✅ 5 mod 到主菜单 | Carpet/MaLiLib/MiniHUD/Litematica/Tweakeroo |
+| Forge | ✅ 完整 | ⏳ 待 mod | @Mod 扫描 + EventBus + Registry + 生命周期 |
+| NeoForge | ✅ 完整 | ⏳ 待 mod | 基于 Forge，用 neoforge.mods.toml |
+| Quilt | ✅ 完整 | ⏳ 待 mod | 基于 Fabric，用 quilt.mod.json |
 
 ---
 
@@ -18,7 +18,7 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 | Mod | 版本 | 状态 | 备注 |
 |-----|------|------|------|
-| Carpet | 1.4.147+v240613 | ✅ 主菜单 | 147 个 mixin 全部过滤（类结构变化） |
+| Carpet | 1.4.147+v240613 | ✅ 主菜单 | 147 个 mixin 全部过滤 |
 | MaLiLib | 0.21.10 | ✅ 主菜单 | 含 3 个嵌套 fabric-api jar |
 | MiniHUD | 0.32.60 | ✅ 主菜单 | 依赖 malilib |
 | Litematica | 0.19.61 | ✅ 主菜单 | 依赖 malilib |
@@ -35,63 +35,73 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 
 ---
 
-## 🔧 Forge 运行时（开发中）
+## 🔧 Forge 运行时（代码完成，待测试）
 
-`forbric-next-forge` 模块当前状态：
-- ForgeModLoader.java（102 行）
-- ForgeModRuntime.java（101 行）
+**模块：** `forbric-next-forge`
 
-待实现：
-- @Mod 注解扫描 + mod 元数据解析（mods.toml）
-- 生命周期调度（preInit / init / postInit）
-- EventBus 桥接
-- 真实 Forge mod 加载验证
-
-### 待测试 Forge Mods
-- Create 机械动力
-- Valkyrien Skies 瓦尔基里
-- Farmer's Delight 农夫乐事
-- ProjectE 等价交换
-- Titan 泰坦（文件损坏，需重新下载）
-- Avaritia 无尽贪婪
-- 压缩木棍
+**已实现：**
+- `ForgeAnnotationScanner` — 字节码常量池扫描 @Mod 注解类
+- `ForgeEventBus` — @SubscribeEvent 事件分发，支持事件继承
+- `ForgeRegistry` — Block/Item/Entity/Biome/Sound 注册系统
+- `ForgeModRuntime` — 完整生命周期：
+  - ConstructionEvent → RegisterEvent → SetupEvent → SidedSetupEvent → InterModEnqueueEvent → InterModProcessEvent → LoadCompleteEvent
+- `ForgeModLoader` — mods.toml 解析 + @Mod 类加载 + 事件总线串联
 
 ---
 
-## ❌ NeoForge / Quilt（未开始）
+## 🔧 NeoForge 运行时（代码完成，待测试）
 
-- NeoForge：复用 Forge 代码，调整 @Mod 包路径和注册方式
-- Quilt：复用 Fabric 代码，适配 Quilt Loader API 差异
+**模块：** `forbric-next-neoforge`
+
+**与 Forge 的差异：**
+- 元数据文件：`META-INF/neoforge.mods.toml`（不是 mods.toml）
+- @Mod 注解包名：`net.neoforged.fml.common.Mod`
+- 复用 Forge 的 EventBus 和 Registry
+- 单事件总线（没有 Forge 的 mod-bus / game-bus 分离）
 
 ---
 
-## ⚠️ 网络限制（下载受阻）
+## 🔧 Quilt 运行时（代码完成，待测试）
 
+**文件：** `forbric-next-fabric/QuiltModLoader.java`
+
+**与 Fabric 的差异：**
+- 元数据文件：`quilt.mod.json`（Fabric 是 fabric.mod.json）
+- 复用 Fabric 的入口点执行和加载顺序
+- 复用 QuiltModDetector 识别 Quilt mod
+
+---
+
+## 🔧 跨版本重映射层
+
+**模块：** `forbric-next-remapper`
+
+**已实现：**
+- RuntimeRemapper — class 文件常量池重写（CONSTANT_Class + 描述符 + 字符串常量）
+- ModBytecodeRewriter — 批量重写 mod jar 工具
+  - JiJ 嵌套 jar 自动处理（META-INF/jars/*.jar）
+  - 嵌套 jar 签名清理
+  - 嵌套 jar mixin 配置清理
+- 映射数据：
+  - 类映射：8,230 条
+  - 方法映射：40,865 条（按描述符精确匹配）
+  - 字段映射：37,430 条
+
+---
+
+## ⚠️ 待解决
+
+### 网络限制（无法下载测试 mod）
 - CurseForge 直连失败（AccessDenied）
 - Modrinth API 不通
-- GitHub API 限流（403）
-- 国内镜像站（mcpoly / minecarft / mcber）均无法批量下载 mod 文件
+- GitHub API 认证后可用，但 releases 里没有 mod jar 附件（MC mod 全走 CurseForge/Modrinth 分发）
 
-待下载：Xaero's Minimap、XRay、EXTREAL、Better Leaves、Compliance 64x、Low On Fire、Punchy!
+### 待测试 mod（有了 jar 就能测）
+- Fabric: Xaero's Minimap, XRay, Carpet TIS Addition
+- Forge: Create, Valkyrien Skies, Farmer's Delight, ProjectE, Titan, Avaritia, 压缩木棍
+- Resource Packs: EXTREAL, Better Leaves, Compliance 64x, Low On Fire, Punchy!
 
-## 🔧 已修复的关键问题
-
-1. **JiJ 嵌套 jar 自动重写** — ModBytecodeRewriter 自动处理 META-INF/jars/*.jar
-2. **嵌套 jar 签名清理** — 改 class 文件后删 SHA-256 签名
-3. **嵌套 jar mixin 清理** — 删掉嵌套 jar 的 mixin 配置
-4. **字符串常量点号重写** — 反射/Class.forName 用的点号格式类名
-5. **手动路径映射**：
-   - `net/minecraft/resources/ResourceLocation` → `net/minecraft/resources/Identifier`
-   - `net/minecraft/client/gui/GuiGraphics` → `net/minecraft/client/gui/GuiGraphicsExtractor`
-   - `net/minecraft/ResourceLocationException` → `net/minecraft/IdentifierException`
-   - `net/minecraft/world/level/GameRules` → `net/minecraft/world/level/gamerules/GameRules`
-   - `net/minecraft/world/level/Explosion` → `net/minecraft/world/level/ServerExplosion`
-
-## 📊 映射数据
-
-- 类映射：8,230 条
-- 方法映射：40,865 条（按描述符精确匹配）
-- 字段映射：37,430 条
+---
 
 ## 📸 截图
 
