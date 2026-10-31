@@ -8,9 +8,25 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 | 加载器 | 代码 | 真实 mod 测试 | 说明 |
 |--------|------|--------------|------|
 | Fabric | ✅ 完整 | ✅ 5 mod 到主菜单 | Carpet/MaLiLib/MiniHUD/Litematica/Tweakeroo |
-| Forge | ✅ 完整 | ⏳ 待 mod | @Mod 扫描 + EventBus + Registry + 生命周期 |
+| Forge | ✅ 完整 | 🔧 结构验证通过 | Farmer's Delight: 14 @Mod 类 / 72 Block / 27 Item |
 | NeoForge | ✅ 完整 | ⏳ 待 mod | 基于 Forge，用 neoforge.mods.toml |
 | Quilt | ✅ 完整 | ⏳ 待 mod | 基于 Fabric，用 quilt.mod.json |
+
+---
+
+## 🔧 Forge 运行时验证
+
+| Mod | 版本 | 状态 | 备注 |
+|-----|------|------|------|
+| Farmer's Delight | 1.20.1-1.3.4 | ✅ 结构验证 | 289 classes, 14 @Mod, 72 Block, 27 Item |
+| Create | 1.20.1-6.0.8 | ⏳ 下载中 | ~6MB / 13.6MB |
+
+**验证结果：**
+- ✅ mods.toml 元数据解析成功
+- ✅ @Mod 注解扫描成功（14 个类）
+- ✅ @EventBusSubscriber 检测成功（13 个类）
+- ✅ Block/Item/Entity 注册类统计
+- ⏳ 完整运行时（MC 主菜单）需要 Forge classloader 集成
 
 ---
 
