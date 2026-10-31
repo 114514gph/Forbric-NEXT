@@ -49,13 +49,19 @@ public class ForgeModLoader implements ModLoader {
 
         try (DirectoryStream<Path> jars = Files.newDirectoryStream(modsDir, "*.jar")) {
             for (Path jar : jars) {
+                // Try Forge mods.toml first, then NeoForge neoforge.mods.toml
                 var mods = ModsToml.readFromJar(jar, "META-INF/mods.toml");
-                if (mods.isEmpty()) continue; // not a Forge mod, skip
+                Ecosystem eco = Ecosystem.MINECRAFTFORGE;
+                if (mods.isEmpty()) {
+                    mods = ModsToml.readFromJar(jar, "META-INF/neoforge.mods.toml");
+                    eco = Ecosystem.NEOFORGE;
+                }
+                if (mods.isEmpty()) continue; // not a Forge/NeoForge mod, skip
 
                 for (ModsToml.Mod m : mods.get()) {
                     out.add(new ModCandidate(m.modId(), m.version(),
-                        Ecosystem.MINECRAFTFORGE, jar, List.of()));
-                    NextLog.info("  Found Forge mod: {} {} ({})", m.modId(), m.version(), jar.getFileName());
+                        eco, jar, List.of()));
+                    NextLog.info("  Found {} mod: {} {} ({})", eco, m.modId(), m.version(), jar.getFileName());
                 }
             }
         } catch (IOException e) {
