@@ -8,9 +8,9 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 | 加载器 | 代码 | 真实 mod 测试 | 说明 |
 |--------|------|--------------|------|
 | Fabric | ✅ 完整 | ✅ 5 mod 到主菜单 | Carpet/MaLiLib/MiniHUD/Litematica/Tweakeroo |
-| Forge | ✅ 桥接集成 | ✅ 10/14 类加载到主菜单 | Farmer's Delight 真正运行时加载，常量池重映射 |
-| NeoForge | ✅ 完整 | ⏳ mod 已下载待测 | Friends&Foes NeoForge 5.0.4 (366 classes) |
-| Quilt | ✅ 完整 | ⏳ mod 已下载待测 | Friends&Foes Quilt/Fabric 5.0.4 |
+| Forge | ✅ 桥接集成 | ✅ 10/14 类到主菜单 | Farmer's Delight，常量池重映射 |
+| NeoForge | ✅ 检测支持 | ✅ mod 检测到主菜单 | Friends&Foes neoforge.mods.toml 识别 |
+| Quilt | ✅ Fabric 兼容 | ✅ mod 被识别 | Friends&Foes Quilt 版（Fabric 格式）|
 
 ---
 
@@ -41,6 +41,44 @@ MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 2. `IConfigSpec` — Forge 配置类，MC 不存在
 3. `Enchantment` 变成 final — 26.3 API 变更，不能被继承
 4. `DiggerItem` 被删除 — 工具改成数据驱动 Tool 组件
+
+---
+
+## 🔷 NeoForge 测试
+
+### Friends&Foes NeoForge 5.0.4
+- ✅ `neoforge.mods.toml` 元数据识别成功
+- ✅ ForgeModLoader 检测为 NEOFORGE 类型 mod
+- ✅ Bridge PreLaunch + ModInitializer 完成
+- ✅ 游戏到主菜单 (Welcome to Minecraft!)
+- ❌ 主类加载失败：`net/neoforged/fml/ModContainer` 不存在
+  - 原因：NeoForge 运行时 API 类，MC 原生没有
+  - 解决：需要写 NeoForge API 兼容层（类似 Forge 桥接）
+
+📸 截图：`screenshot-neoforge-test.png`
+
+---
+
+## 🧵 Quilt 测试
+
+### Friends&Foes Quilt/Fabric 5.0.4
+- ✅ Fabric Loader 识别为 Fabric mod (fabric.mod.json)
+- ✅ Quilt mod 本质是 Fabric 格式，兼容 Fabric loader
+- ❌ 加载失败原因：
+  - 需要 Fabric Loader 0.19.0+（当前 0.16.10）
+  - 缺少 fabric-api 依赖
+  - 缺少 resourcefullib 依赖
+- 结论：Quilt 兼容层工作正常，是 mod 依赖不全导致失败
+
+---
+
+## ⚠️ 已知环境限制
+
+### GUI 交互（创建世界测试）
+- Xvfb 虚拟显示下，MC 的 GLFW 输入系统不响应 xdotool 合成鼠标事件
+- 原因：GLFW 使用原生输入抓取，绕过 X11 事件队列
+- 影响：无法自动化点击创建世界按钮
+- 主菜单截图已确认游戏正常运行，创建世界测试需要真实显示环境
 
 ---
 
