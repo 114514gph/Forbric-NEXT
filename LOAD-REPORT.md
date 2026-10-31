@@ -1,11 +1,20 @@
 # Forbric-NEXT Load Report
 
-MC 26.3 客户端跨版本兼容加载测试报告
+MC 26.3 客户端跨版本 + 跨加载器兼容测试报告
 测试时间：2026-10-31
 
-## ✅ 已验证通过
+## 加载器进度总览
 
-### Fabric Mods
+| 加载器 | 状态 | 说明 |
+|--------|------|------|
+| Fabric | ✅ 已验证 | 5 个 mod 跑到主菜单 |
+| Forge | 🔧 开发中 | 运行时骨架已写，待真实 mod 验证 |
+| NeoForge | ❌ 未开始 | 复用 Forge 代码，适配 @Mod 注解差异 |
+| Quilt | ❌ 未开始 | 复用 Fabric 代码，适配 Quilt Loader API |
+
+---
+
+## ✅ Fabric 已验证通过
 
 | Mod | 版本 | 状态 | 备注 |
 |-----|------|------|------|
@@ -24,46 +33,46 @@ MC 26.3 客户端跨版本兼容加载测试报告
 | Faithful 32x | latest | ✅ 结构正常 | pack_format 34 |
 | Fresh Animations | 1.11.1 | ✅ 结构正常 | pack_format 15-75 |
 
-## ⚠️ 未测试 / 未下载
+---
 
-### 网络限制
+## 🔧 Forge 运行时（开发中）
+
+`forbric-next-forge` 模块当前状态：
+- ForgeModLoader.java（102 行）
+- ForgeModRuntime.java（101 行）
+
+待实现：
+- @Mod 注解扫描 + mod 元数据解析（mods.toml）
+- 生命周期调度（preInit / init / postInit）
+- EventBus 桥接
+- 真实 Forge mod 加载验证
+
+### 待测试 Forge Mods
+- Create 机械动力
+- Valkyrien Skies 瓦尔基里
+- Farmer's Delight 农夫乐事
+- ProjectE 等价交换
+- Titan 泰坦（文件损坏，需重新下载）
+- Avaritia 无尽贪婪
+- 压缩木棍
+
+---
+
+## ❌ NeoForge / Quilt（未开始）
+
+- NeoForge：复用 Forge 代码，调整 @Mod 包路径和注册方式
+- Quilt：复用 Fabric 代码，适配 Quilt Loader API 差异
+
+---
+
+## ⚠️ 网络限制（下载受阻）
+
 - CurseForge 直连失败（AccessDenied）
 - Modrinth API 不通
 - GitHub API 限流（403）
-- 仅 GitHub.com 网页可访问，无法批量下载 release 文件
+- 国内镜像站（mcpoly / minecarft / mcber）均无法批量下载 mod 文件
 
-### 未下载的 Fabric Mods
-
-| Mod | 原因 |
-|-----|------|
-| Xaero's Minimap | 下载渠道不可用 |
-| XRay | 下载渠道不可用 |
-| Carpet TIS Addition | 文件已在 mods-bak/，未测试 |
-
-### Forge Mods（运行时开发中）
-
-**Forbric-NEXT 设计目标是跨加载器兼容（Fabric + Forge + NeoForge）。**
-当前 `forbric-next-forge` 模块是骨架（203 行），Forge mod 加载逻辑（@Mod 注解扫描、生命周期调度）正在开发中。
-
-| Mod | 备注 |
-|-----|------|
-| Create 机械动力 | 待 Forge 运行时完成后测试 |
-| Valkyrien Skies 瓦尔基里 | 同上 |
-| Farmer's Delight 农夫乐事 | 同上 |
-| ProjectE 等价交换 | 同上 |
-| Titan 泰坦 | 文件损坏，需重新下载 |
-| Avaritia 无尽贪婪 | 待测试 |
-| 压缩木棍 | 待测试 |
-
-### 未下载的 Resource Packs
-
-| Pack | 原因 |
-|------|------|
-| EXTREAL | 下载渠道不可用 |
-| Better Leaves | 下载渠道不可用 |
-| Compliance 64x | 下载渠道不可用 |
-| Low On Fire | 下载渠道不可用 |
-| Punchy! | 下载渠道不可用 |
+待下载：Xaero's Minimap、XRay、EXTREAL、Better Leaves、Compliance 64x、Low On Fire、Punchy!
 
 ## 🔧 已修复的关键问题
 
