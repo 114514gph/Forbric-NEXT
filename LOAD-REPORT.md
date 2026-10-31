@@ -15,7 +15,7 @@ MC 26.3 客户端跨版本兼容加载测试报告
 | Litematica | 0.19.61 | ✅ 主菜单 | 依赖 malilib |
 | Tweakeroo | 0.21.61 | ✅ 主菜单 | 依赖 malilib |
 
-**5 个 mod 同时加载，MC 26.3 主菜单正常渲染。**
+**5 个 Fabric mod 同时加载，MC 26.3 主菜单正常渲染。**
 
 ### Resource Packs
 
@@ -24,30 +24,47 @@ MC 26.3 客户端跨版本兼容加载测试报告
 | Faithful 32x | latest | ✅ 结构正常 | pack_format 34 |
 | Fresh Animations | 1.11.1 | ✅ 结构正常 | pack_format 15-75 |
 
-## ⚠️ 待测试
+## ⚠️ 未测试 / 未下载
 
-| Mod | 类型 | 状态 | 备注 |
-|-----|------|------|------|
-| Carpet TIS Addition | Fabric | ⏳ 未测试 | 文件在 mods-bak/ |
-| Titan | Forge 1.20.4 | ⏳ 未测试 | 文件在 mods-bak/ |
-| Xaero's Minimap | Fabric | ❌ 未下载 | CurseForge 直连失败 |
-| XRay | Fabric | ❌ 未下载 | CurseForge 直连失败 |
-| Create | Forge | ❌ 未下载 | |
-| Valkyrien Skies | Forge | ❌ 未下载 | |
-| Farmer's Delight | Forge | ❌ 未下载 | |
-| ProjectE | Forge | ❌ 未下载 | |
-| Avaritia | Forge | ❌ 未下载 | |
-| 压缩木棍 | Forge | ❌ 未下载 | |
+### 网络限制
+- CurseForge 直连失败（AccessDenied）
+- Modrinth API 不通
+- GitHub API 限流（403）
+- 仅 GitHub.com 网页可访问，无法批量下载 release 文件
 
-### 待测试 Resource Packs
+### 未下载的 Fabric Mods
 
-| Pack | 状态 |
+| Mod | 原因 |
+|-----|------|
+| Xaero's Minimap | 下载渠道不可用 |
+| XRay | 下载渠道不可用 |
+| Carpet TIS Addition | 文件已在 mods-bak/，未测试 |
+
+### Forge Mods（架构不兼容）
+
+**当前加载器是 Fabric Loader (KnotClient)，无法加载 Forge mod。**
+
+Forbric-NEXT 的设计目标是多系兼容，但当前阶段只实现了 Fabric 加载层。Forge mod 需要 Forge/NeoForge Loader 才能运行，不在本次测试范围内。
+
+| Mod | 备注 |
+|-----|------|
+| Create 机械动力 | Forge mod，需 Forge Loader |
+| Valkyrien Skies 瓦尔基里 | Forge mod，需 Forge Loader |
+| Farmer's Delight 农夫乐事 | Forge mod，需 Forge Loader |
+| ProjectE 等价交换 | Forge mod，需 Forge Loader |
+| Titan 泰坦 | Forge mod，文件在 mods-bak/ |
+| Avaritia 无尽贪婪 | Forge mod，需 Forge Loader |
+| 压缩木棍 | Forge mod，需 Forge Loader |
+
+### 未下载的 Resource Packs
+
+| Pack | 原因 |
 |------|------|
-| EXTREAL | ❌ 未下载 |
-| Better Leaves | ❌ 未下载 |
-| Compliance 64x | ❌ 未下载 |
-| Low On Fire | ❌ 未下载 |
-| Punchy! | ❌ 未下载 |
+| EXTREAL | 下载渠道不可用 |
+| Better Leaves | 下载渠道不可用 |
+| Compliance 64x | 下载渠道不可用 |
+| Low On Fire | 下载渠道不可用 |
+| Punchy! | 下载渠道不可用 |
 
 ## 🔧 已修复的关键问题
 
