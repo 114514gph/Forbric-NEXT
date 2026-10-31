@@ -102,7 +102,15 @@ public class ForgeAnnotationScanner {
      */
     public static List<Method> findSubscribeEventMethods(Class<?> modClass) {
         List<Method> result = new ArrayList<>();
-        for (Method m : modClass.getDeclaredMethods()) {
+        Method[] methods;
+        try {
+            methods = modClass.getDeclaredMethods();
+        } catch (NoClassDefFoundError | ExceptionInInitializerError e) {
+            NextLog.debug("ForgeAnnotationScanner: cannot inspect methods of {} (missing Forge classes): {}",
+                modClass.getSimpleName(), e.getMessage());
+            return result;
+        }
+        for (Method m : methods) {
             for (Annotation a : m.getAnnotations()) {
                 String typeName = a.annotationType().getName();
                 if (typeName.contains("SubscribeEvent")) {

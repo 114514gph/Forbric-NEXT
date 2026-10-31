@@ -4,6 +4,10 @@ dependencies {
     api project(':neoforbric-loader-api')
     api project(':neoforbric-fabric-api')
     implementation project(':neoforbric-common')
+    implementation project(':neoforbric-forge')
+    implementation project(':neoforbric-neoforge')
     // 跨版本老 mod 运行时字节码重映射层（1.20.4/1.21.1 → 当前 MC 版本）
     implementation project(':neoforbric-remapper')
+    // Fabric Loader API for entrypoint bridge
+    compileOnly files('/home/user/forbric-263/libs/fabric-loader-0.16.10.jar')
 }

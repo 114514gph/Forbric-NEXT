@@ -64,8 +64,8 @@ public class ForgeModRuntime {
 
                     NextLog.info("ForgeModRuntime: instantiated {} ({} event handlers)",
                         className, ForgeAnnotationScanner.findSubscribeEventMethods(modClass).size());
-                } catch (Exception e) {
-                    NextLog.warn("ForgeModRuntime: failed to instantiate {}: {}", className, e.getMessage());
+                } catch (Throwable e) {
+                    NextLog.warn("ForgeModRuntime: failed to instantiate {}: {}", className, e.toString());
                 }
             }
         } catch (Exception e) {
