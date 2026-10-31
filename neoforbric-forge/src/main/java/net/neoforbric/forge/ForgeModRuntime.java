@@ -45,10 +45,10 @@ public class ForgeModRuntime {
             return;
         }
 
-        // Step 2: Create classloader and instantiate each @Mod class
+        // Step 2: Create remapping classloader and instantiate each @Mod class
         try {
             URL[] urls = { candidate.jarPath().toUri().toURL() };
-            URLClassLoader cl = new URLClassLoader(urls, ForgeModRuntime.class.getClassLoader());
+            RemappingForgeClassLoader cl = new RemappingForgeClassLoader(urls, ForgeModRuntime.class.getClassLoader());
             classLoaders.add(cl);
 
             for (String className : modClasses) {
