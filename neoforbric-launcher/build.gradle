@@ -1,0 +1,15 @@
+plugins { id 'application' }
+description = 'NeoForbric launcher entry point'
+application {
+    mainClass = 'net.neoforbric.launcher.Main'
+}
+dependencies {
+    implementation project(':neoforbric-boot')
+    implementation project(':neoforbric-fabric')
+    implementation project(':neoforbric-fabric-api')
+    implementation project(':neoforbric-forge')
+    implementation project(':neoforbric-neoforge')
+    implementation project(':neoforbric-common')
+    // HeadlessPreflight 需要调 ModRemapPipeline
+    implementation project(':neoforbric-remapper')
+}
